@@ -52,8 +52,22 @@
 
             function updateData() {
                 var success = function (response) {
-                    if ( response.data.length > 0 ){
-                        $('table.orders tbody').html(response.data);
+                    if ( response.length > 0 ){
+                        $('table.orders tbody').empty();
+
+                        $(response).each(function(k, row){
+                            var vRow = '<tr>';
+                            vRow += '<td>'+row['id']+'</td>';
+
+                            if ( row['status'] == 0 ){
+                                vRow += '<td class="status-in-progress">Очікування</td>';
+                            } else if(row['status'] == 1){
+                                vRow += '<td class="status-complete">Готово</td>';
+                            }
+                            vRow += '</tr>';
+                            $('table.orders tbody').append(vRow);
+                            console.log(row);
+                        });
                     }
                     window.setInterval('updateData()', 60000);
                 };
@@ -62,7 +76,7 @@
                 };
 
                 $.ajax({
-                    url: 'ajax.php',
+                    url: 'ajax_orders.php',
                     dataType: "json",
                     success: success,
                     error: error

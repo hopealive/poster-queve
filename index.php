@@ -59,10 +59,10 @@
                             var vRow = '<tr>';
                             vRow += '<td>'+row['id']+'</td>';
 
-                            if ( row['status'] == 0 ){
-                                vRow += '<td class="status-in-progress">Очікування</td>';
-                            } else if(row['status'] == 1){
+                            if(row['status'] == 2 || row['status'] == 2){
                                 vRow += '<td class="status-complete">Готово</td>';
+                            } else {
+                                vRow += '<td class="status-in-progress">Очікування</td>';
                             }
                             vRow += '</tr>';
                             $('table.orders tbody').append(vRow);

@@ -59,10 +59,22 @@ class Poster
                 $date->setTimestamp(round($transaction['date_start']/1000));
                 $row['last_date'] = $date->format("Y-m-d H:i:s");
             }
+
             $result[] = $row;
+            $slice =  array_slice($result, 0, 8);
+
         }
 
-        return $result;
+
+        function sorta ($a, $b) {
+            if ($a['last_date'] < $b['last_date'])
+                return 1;
+        }
+
+        usort($slice, 'sorta');
+
+
+        return $slice;
     }
 
 }

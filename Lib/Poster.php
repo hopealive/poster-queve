@@ -71,20 +71,16 @@ class Poster
             }
 
             $result[] = $row;
-            $slice =  array_slice($result, 0, 8);
-
         }
 
-
-        function sorta ($a, $b) {
-            if ($a['last_date'] < $b['last_date'])
+        usort($result, function($a, $b){
+            if (strtotime($a['last_date']) < strtotime($b['last_date'])){
                 return 1;
-        }
+            }
+        } );
+        $result =  array_slice($result, 0, 8);
 
-        usort($slice, 'sorta');
-
-
-        return $slice;
+        return $result;
     }
 
 

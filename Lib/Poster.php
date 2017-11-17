@@ -5,12 +5,13 @@
  * @author gregzorb
  */
 require_once('Lib/Curl.php');
+require_once('config.php');
 
 class Poster
 {
     private $transport,
-        $url = "https://gregzorb.joinposter.com/api/",
-        $token = "0690289d0f354269eda7a6537a9cec6b";
+        $configs;
+
 
     public $transactionStatuses = [
         1 => "открыт",
@@ -22,12 +23,20 @@ class Poster
     {
         date_default_timezone_set('UTC');
         $this->transport = new Curl();
+        $this->configs = (new Config())->configs;
     }
 
     public function getLastTransactions()
     {
         $yesterday = date("Ymd", time() - 60 * 60 * 24);
-        $url = $this->url.'dash.getTransactions?include_products=false&dateFrom='.$yesterday.'&token='.$this->token;
+        
+        $params = [
+            'include_products' => false,
+            'dateFrom' => $yesterday,
+            'token' => $this->configs['token'],
+        ];
+
+        $url = $this->configs['url'].'dash.getTransactions?'.http_build_query($params);
 
         $transactions = $this->transport->sendRequest($url);
         if ( empty($transactions['response']) ){

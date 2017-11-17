@@ -35,7 +35,6 @@ class Poster
         
         $params = [
             'include_products' => false,
-            'status' => 1, //only opened
             'dateFrom' => $yesterday,
             'token' => $this->configs['token'],
         ];

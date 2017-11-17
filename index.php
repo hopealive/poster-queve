@@ -66,7 +66,7 @@
                         $(response).each(function(k, row){
                             var vRow = '';
 
-                            if(row['status'] == 2 || row['status'] == 2){
+                            if(row['status'] == 2 ){
                                 vRow += '<div class="row status-complete">';
                             } else {
                                 vRow += '<div class="row status-in-progress"">';
@@ -74,7 +74,7 @@
 
                             vRow += '<div class="col col-id">'+row['id']+'</div>';
 
-                            if(row['status'] == 2 || row['status'] == 2){
+                            if(row['status'] == 2 ){
                                 vRow += '<div class="col col-status">Готово</div>';
                             } else {
                                 vRow += '<div class="col col-status">Очікування</div>';

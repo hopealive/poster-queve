@@ -19,6 +19,9 @@ class Poster
         3 => "удален",
     ];
 
+    const STATUS_OPENED = 1;
+    const STATUS_DONE = 2;
+
     public function __construct()
     {
         date_default_timezone_set('UTC');
@@ -32,6 +35,7 @@ class Poster
         
         $params = [
             'include_products' => false,
+            'status' => 1, //only opened
             'dateFrom' => $yesterday,
             'token' => $this->configs['token'],
         ];
@@ -45,9 +49,15 @@ class Poster
 
         $result = [];
         foreach ($transactions['response'] as $transaction ){
+
+            $status = self::STATUS_OPENED;
+            if (strpos($transaction['transaction_comment'], $this->configs['doneComment']) > -1){
+                $status = self::STATUS_DONE;
+            }
+
             $row = [
                 'id' => $transaction['transaction_id'],
-                'status' => $transaction['status'],
+                'status' => $status,
                 'last_date' => date("Y-m-d H:i:s"),
             ];
 
@@ -75,6 +85,17 @@ class Poster
 
 
         return $slice;
+    }
+
+
+    protected function mapTransactions($transactions)
+    {
+        
+    }
+
+    protected function sortTransactions()
+    {
+        
     }
 
 }

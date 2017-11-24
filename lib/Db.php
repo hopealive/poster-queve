@@ -16,9 +16,6 @@ class DB
     # @object, PDO statement object
     private $sQuery;
     
-    # @array,  The database settings
-    private $settings;
-    
     # @bool ,  Connected to the database
     private $bConnected = false;
     
@@ -50,12 +47,11 @@ class DB
      */
     private function Connect()
     {
-        $dsn = 'sqlite:'.ROOT.DS.'db/komora2.sqlite';
+        $dsn = 'sqlite:'.ROOT.DS.'db/komora.sqlite';
 
         try {
             # Read settings from INI file, set UTF8
-            $this->pdo = new PDO($dsn, null, null, array(
-            ));
+            $this->pdo = new PDO($dsn);
             
             # We can now log any exceptions on Fatal error. 
             $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);

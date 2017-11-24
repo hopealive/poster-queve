@@ -5,29 +5,18 @@ define('ROOT', dirname(dirname(__FILE__)));
 define('ADMIN_PATH', dirname(dirname(__FILE__)).DS.'admin');
 define('VIEWS_PATH', ROOT.DS.'view');
 
-//require_once(ROOT.DS.'lib'.DS.'init.php');
 session_start();
+
+//TODO:
+//require_once(ROOT.DS.'lib'.DS.'init.php');
 //App::run($_SERVER['REQUEST_URI']);
-
-require_once('../lib/Db.php');
-$Db = new Db();
-$result = $Db->query('select * from messages');
-var_dump ( $result ); die;
-
-
-
-
-
-
-
-
 
 require_once('../lib/Auth.php');
 require_once('../lib/View.php');
+require_once('../lib/Router.php');
 
 $Auth       = new Auth;
 $isLoggedIn = $Auth->loggedIn();
-
 
 //routing
 if ($isLoggedIn) {
@@ -43,7 +32,7 @@ switch ($action) {
     case "login":
         $result = $Auth->authenticate($_POST);
         if ( $result ){
-            header("Location: /admin?action=index");
+            Router::redirect('/admin?action=index');
         }
         break;
     case "slider":
@@ -54,7 +43,7 @@ switch ($action) {
         break;
     case "logout":
         $Auth->logout();
-        header("Location: /admin?action=login");
+        Router::redirect('/admin?action=login');
         break;
 }
 ?>

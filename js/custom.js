@@ -46,25 +46,5 @@ function updateData() {
 
 $('document').ready(function () {
     updateData();
-
-    var sliderOptions =
-            {
-                sliderId: "slider",
-                startSlide: 0,
-                effect: "17,13,1",
-                effectRandom: true,
-                pauseTime: 2500,
-                transitionTime: 1000,
-                slices: 14,
-                boxes: 8,
-                hoverPause: 1,
-                autoAdvance: true,
-                captionOpacity: 0.3,
-                captionEffect: "fade",
-                thumbnailsWrapperId: "thumbs",
-                m: false,
-                license: "mylicense"
-            };
-
-    var imageSlider = new mcImgSlider(sliderOptions);
 });
+

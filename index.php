@@ -5,12 +5,7 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        <script src="https://code.jquery.com/jquery-3.2.1.min.js" crossorigin="anonymous"></script>
-
         <link href="js/jsImgSlider/themes/6/js-image-slider.css" rel="stylesheet" type="text/css" />
-        <script src="js/jsImgSlider/themes/6/mcVideoPlugin.js" type="text/javascript"></script>
-        <script src="js/jsImgSlider/themes/6/js-image-slider.js" type="text/javascript"></script>
-        <script src="js/custom.js" type="text/javascript"></script>
 
         <link href="css/style.css" rel="stylesheet" type="text/css" />
     </head>
@@ -32,16 +27,16 @@
                 <div id="sliderFrame">
                     <div id="slider">
                         <a class="video" href="http://www.youtube.com/watch?v=p_gv6fRejLM"  data-autovideo="1">
-                            <b data-src="images/slider-3.jpg">Image Slider</b>
+                            <b data-src="images/slider-3.jpg">&nbsp;</b>
                         </a>
-                        
+
                         <img src="images/slider-1.jpg" />
                         <img src="images/slider-2.jpg" />
                         <img src="images/slider-3.jpg" />
                         <img src="images/slider-4.jpg" alt="#htmlcaption" />
 
                         <a class="video" href="http://www.youtube.com/watch?v=P0G_2tiivxE"  data-autovideo="1">
-                            <b data-src="images/slider-3.jpg">Image Slider</b>
+                            <b data-src="images/slider-3.jpg">&nbsp;</b>
                         </a>
                         <img src="images/slider-4.jpg" />
                         <img src="images/slider-3.jpg" />
@@ -51,6 +46,33 @@
                 </div>
             </div>
         </div>
-        
+
+        <script src="https://code.jquery.com/jquery-3.2.1.min.js" crossorigin="anonymous"></script>
+        <script src="js/jsImgSlider/themes/6/mcVideoPlugin.js" type="text/javascript"></script>
+        <script src="js/jsImgSlider/themes/6/js-image-slider.js" type="text/javascript"></script>
+        <script src="js/custom.js" type="text/javascript"></script>
+        <script>
+            var sliderOptions =
+                    {
+                        sliderId: "slider",
+                        startSlide: 0,
+                        effect: "17,13,1",
+                        effectRandom: true,
+                        pauseTime: 2500,
+                        transitionTime: 1000,
+                        slices: 14,
+                        boxes: 8,
+                        hoverPause: 1,
+                        autoAdvance: true,
+                        captionOpacity: 0.3,
+                        captionEffect: "fade",
+                        thumbnailsWrapperId: "thumbs",
+                        m: false,
+                        license: "mylicense"
+                    };
+
+            var imageSlider = new mcImgSlider(sliderOptions);
+
+        </script>
     </body>
 </html>

@@ -50,6 +50,29 @@ class Poster
             return [];
         }
 
+        $transactions = $this->mapTransactions($transactions);
+
+        $result = [];
+        if ( isset($transactions[self::STATUS_DONE]) ){
+            $sorted = $this->sortTransactions($transactions[self::STATUS_DONE]);
+            $result = array_merge($result, $sorted);
+        }
+
+        if ( isset($transactions[self::STATUS_WAITING]) ){
+            $sorted = $this->sortTransactions($transactions[self::STATUS_WAITING]);
+            $result = array_merge($result, $sorted);
+        }
+
+        $result =  array_slice($result, 0, 8);
+
+
+        return $result;
+    }
+
+
+
+    protected function mapTransactions($transactions)
+    {
         $resultByStatus = [];
         foreach ($transactions['response'] as $t ){
             $status = $t['status'];
@@ -84,30 +107,7 @@ class Poster
         if ( empty($resultByStatus) ){
             return [];
         }
-
-        $result = [];
-        
-        if ( isset($resultByStatus[self::STATUS_DONE]) ){
-            $sorted = $this->sortTransactions($resultByStatus[self::STATUS_DONE]);
-            $result = array_merge($result, $sorted);
-        }
-
-        if ( isset($resultByStatus[self::STATUS_WAITING]) ){
-            $sorted = $this->sortTransactions($resultByStatus[self::STATUS_WAITING]);
-            $result = array_merge($result, $sorted);
-        }
-
-        $result =  array_slice($result, 0, 8);
-
-
-        return $result;
-    }
-
-
-
-    protected function mapTransactions($transactions)
-    {
-        
+        return $resultByStatus;
     }
 
     protected function sortTransactions($result)

@@ -1,0 +1,33 @@
+/* 
+    Created on : Nov 23, 2017, 8:27:44 PM
+    Author     : gregzorb
+*/
+
+/* For generic page styles.  */
+
+*, html, body { background-color: #E6E6E6; margin: 0; padding: 0; font-size:1px; overflow: hidden}
+
+.wrapper { display: block; width: 1920px; min-height: 1080px; overflow:hidden; }
+.full-hd-col { display: block; width: 960px; min-height: 1080px; float: left; }
+
+.row { clear: both; font-style: italic; font-weight: bold; }
+
+.col { float: left; margin-bottom: 20px;font-size: 82px;  }
+.col.col-id { width: 200px; padding-left: 20px;   }
+.col.col-status { padding-left: 20px; width: 690px; }
+
+.status-in-progress .col { background-color:#FFFF00; color: #000; }
+.status-complete .col { background-color:#00FF00; color: #000; }
+
+.loader { border: 16px solid #f3f3f3; border-top: 16px solid #3498db; border-radius: 50%; width: 120px; height: 120px; animation: spin 2s linear infinite; }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+/* Slider */
+.poster-slider {  padding-top: 200px; }
+#slider { box-shadow:none; }
+#sliderFrame { width: 960px; }
+#slider, #slider .sliderInner { background: #000;  width: 960px; padding-top: 100px; }
+
+#slider .sliderInner { padding-top: 100px; }
+
+div.navBulletsWrapper {display:none;}

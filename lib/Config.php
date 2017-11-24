@@ -1,4 +1,9 @@
 <?php
+/**
+ * Description of Config
+ *
+ * @author gregzorb
+ */
 class Config
 {
 
@@ -9,4 +14,3 @@ class Config
         ];
 
 }
-

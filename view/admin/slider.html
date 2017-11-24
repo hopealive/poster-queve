@@ -1,0 +1,40 @@
+<h1>Медиафайлы слайдер</h1>
+<section class="row text-center placeholders">
+    <form enctype="multipart/form-data">
+        <div class="form-group">
+            <div class="file-loading">
+                <label>Preview</label>
+                <input id="multimedia-upload" type="file" multiple>
+            </div>
+        </div>
+    </form>
+</section>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-fileinput/4.4.5/js/fileinput.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-fileinput/4.4.5/js/plugins/sortable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-fileinput/4.4.5/js/locales/ru.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-fileinput/4.4.5/themes/explorer-fa/theme.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-fileinput/4.4.5/themes/fa/theme.min.js"></script>
+
+<script>
+    $("#multimedia-upload").fileinput({
+        theme: 'fa',
+        showUpload: false,
+        showCaption: false,
+        browseClass: "btn btn-primary btn-lg",
+        fileType: "any",
+        previewFileIcon: "<i class='glyphicon glyphicon-king'></i>",
+        overwriteInitial: false,
+        initialPreviewAsData: true,
+        initialPreview: [
+            "/images/image-slider-1.jpg",
+            "/images/image-slider-2.jpg",
+            "/images/image-slider-3.jpg",
+        ],
+        initialPreviewConfig: [
+            {caption: "/images/thumb1.jpg", size: 329892, width: "120px", url: "{$url}", key: 1},
+            {caption: "/images/thumb2.jpg", size: 872378, width: "120px", url: "{$url}", key: 2},
+            {caption: "/images/thumb3.jpg", size: 632762, width: "120px", url: "{$url}", key: 3}
+        ]
+    });
+</script>

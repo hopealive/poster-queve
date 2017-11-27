@@ -1,0 +1,84 @@
+
+<?php
+
+    include("../lib/Db.php");
+
+    $id = null;
+    if ( !empty($_GET['?id'])) {
+        $id = $_REQUEST['?id'];
+
+    }
+
+    if ( null==$id ) {
+      var_dump($_GET['?id']); die;
+}
+
+if ( !empty($_POST)) {
+
+    $emailError = null;
+    $passError = null;
+
+
+    $email = $_POST['email'];
+    $pass = md5($_POST['password']);
+
+
+    $valid = true;
+
+    if (empty($email)) {
+        $emailError = 'Введите email';
+        $valid = false;
+    } else if ( !filter_var($email,FILTER_VALIDATE_EMAIL) ) {
+        $emailError = 'Введите правильный email';
+        $valid = false;
+    }
+
+    if (empty($pass)) {
+        $passError = 'Пароль не может быть пустым';
+        $valid = false;
+    }
+
+    if ($valid) {
+        $db = new Db();
+        $update = $db->query("UPDATE users SET email = '$email', password = '$pass' WHERE id = $id");
+        echo "<script>alert('Информация обновлена');</script>";
+        echo "<script>document.location.replace('?action=users');</script>";
+}
+}
+?>
+
+
+<h1>Редактировать пользователя</h1>
+
+<div class="span10 offset1">
+
+    <form class="form-horizontal" action="?action=update&?id=<?php echo $id ?>" method="post">
+
+        <div class="control-group <?php echo !empty($emailError)?'error':'';?>">
+            <label class="control-label">Email</label>
+            <div class="controls">
+                <input name="email" type="text" placeholder="Введите email" value="<?php echo !empty($email)?$email:'';?>">
+                <?php if (!empty($emailError)): ?>
+                <span class="help-inline"><?php echo $emailError;?></span>
+                <?php endif;?>
+            </div>
+        </div>
+        <div class="control-group <?php echo !empty($passError)?'error':'';?>">
+            <label class="control-label">Пароль</label>
+            <div class="controls">
+                <input name="password" type="password"  placeholder="Введите новый пароль" value="<?php echo !empty($pass)?$pass:'';?>">
+                <?php if (!empty($passError)): ?>
+                <span class="help-inline"><?php echo $passError;?></span>
+                <?php endif;?>
+            </div>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-success">Обновить</button>
+            <a class="btn" href="?action=users">Назад</a>
+        </div>
+    </form>
+</div>
+
+</div>
+
+

@@ -37,9 +37,15 @@ switch ($action) {
         break;
     case "slider":
         break;
-    case "setings":
+    case "settings":
         break;
     case "profile":
+        break;
+    case "create":
+        break;
+    case "update":
+        break;
+    case "delete":
         break;
     case "logout":
         $Auth->logout();

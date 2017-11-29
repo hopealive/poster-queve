@@ -1,17 +1,8 @@
 <?php
-/* *
- * Log 			A logger class which creates logs when an exception is thrown.
- * @author		Author: Vivek Wicky Aswal. (https://twitter.com/#!/VivekWickyAswal)
- * @git 			https://github.com/wickyaswal/PHP-MySQL-PDO-Database-Class
- * @version      0.1a
- */
 
 class Log
 {
-    # @string, Log directory name
     private $path = '../tmp/logs/';
-
-    # @void, Default Constructor, Sets the timezone and path of the log files.
 
     public function __construct()
     {

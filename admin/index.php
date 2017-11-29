@@ -7,10 +7,13 @@ define('VIEWS_PATH', ROOT.DS.'view');
 
 session_start();
 
+
 //TODO:
 //require_once(ROOT.DS.'lib'.DS.'init.php');
 //App::run($_SERVER['REQUEST_URI']);
 
+require_once('../lib/Log.php');
+require_once('../lib/Db.php');
 require_once('../lib/Auth.php');
 require_once('../lib/View.php');
 require_once('../lib/Router.php');
@@ -52,6 +55,7 @@ switch ($action) {
         Router::redirect('/admin?action=login');
         break;
 }
+
 ?>
 
 <!doctype html>

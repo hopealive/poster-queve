@@ -6,30 +6,28 @@
  * @author gregzorb
  */
 
-include ('Db.php');
 class Auth
 {
 
     const ROOT_LOGIN = 'root@gmail.com';
     const ROOT_PASSWORD = 'fe01ce2a7fbac8fafaed7c982a04e229';
 
-    public function login()
+    protected function getLogins()
     {
-        $request = $_REQUEST['email'];
-        $db = (new DB())->query("select email From users WHERE email = '$request' limit 1;");
-        if(!empty($db)){
+        $logins = (new DB())->query("select id, email From users WHERE 1");
 
-            return $db[0]['email'];
+        $result = array(0 => self::ROOT_LOGIN);
+        if(!empty($logins)){
+            foreach ( $logins as $l ){
+                $result[ $l['id'] ] = $l['email'];
+            }
         }
-        return false;
+        return $result;
     }
 
-
-    public function pass()
+    protected function getPassById($id)
     {
-        $email = $_REQUEST['email'];
-        $pass = md5($_REQUEST['password']);
-        $db = (new DB())->query("select password From users WHERE password = '$pass' and email = '$email' limit 1;");
+        $db = (new DB())->query("select password From users WHERE id = $id limit 1;");
         if(!empty($db)){
             return $db[0]['password'];
         }
@@ -40,9 +38,7 @@ class Auth
     public function loggedIn()
     {
         if ( !isset($_SESSION['authorized']) ){
-           // var_dump($this->login()); var_dump($this->pass()); die;
             return false;
-
         }
 
         if ($_SESSION['authorized']===1) {
@@ -58,17 +54,14 @@ class Auth
 
     public function authenticate($request)
     {
-        if (!isset($request['email']) || $request['email'] !=  ($this->login() || self::ROOT_LOGIN )){
+        if (!isset($request['email']) || !in_array($request['email'], $this->getLogins()) ){
             $this->logOut();
-
             return false;
         }
-        if (!isset($request['password']) || md5($request['password']) != ($this->pass() || self::ROOT_PASSWORD )){
+        
+        if (!isset($request['password']) ){
             $this->logOut();
-
             return false;
-
-
         }
 
         if ( $request['email'] == self::ROOT_LOGIN AND
@@ -77,18 +70,14 @@ class Auth
             return true;
         }
 
-        if ( $request['email'] == $this->login()  AND
-         md5($request['password']) == $this->pass()) {
+        $id = (int)array_search($request['email'], $this->getLogins() );
+        if ($id > 0 && md5($request['password']) == $this->getPassById($id) ){
             $_SESSION['authorized'] = 1;
             return true;
         }
 
-
-
-
         $this->logOut();
         return false;
-
     }
 
 

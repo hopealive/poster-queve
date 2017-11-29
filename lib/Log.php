@@ -9,7 +9,7 @@
 class Log
 {
     # @string, Log directory name
-    private $path = ROOT.DS.'/tmp/logs/';
+    private $path = '../tmp/logs/';
 
     # @void, Default Constructor, Sets the timezone and path of the log files.
 

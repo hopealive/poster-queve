@@ -1,66 +1,19 @@
 <h1>Создать пользователя</h1>
-
-<?php
-
-    if ( !empty($_POST)) {
-
-
-        $emailError = null;
-        $passError = null;
-
-
-
-        $email = $_POST['email'];
-        $pass = md5($_POST['password']);
-
-
-        $valid = true;
-
-
-        if (empty($email)) {
-            $emailError = 'Введите email';
-            $valid = false;
-        } else if ( !filter_var($email,FILTER_VALIDATE_EMAIL) ) {
-            $emailError = 'Введите правильный email';
-            $valid = false;
-        }
-
-        if (empty($pass)) {
-            $passError = 'Пароль не может быть пустым';
-            $valid = false;
-        }
-
-        // insert data
-        if ($valid) {
-        $db = new Db();
-        $create = $db->query("INSERT INTO users VALUES (NULL , '$email', '$pass')");
-        echo "<script>alert('Пользователь создан');</script>";
-        echo "<script>document.location.replace('?action=users');</script>";
-        }
-    }
-
-?>
-
 <div class="container">
     <div class="span10 offset1">
         <form class="form-horizontal" action="?action=create" method="post">
 
-            <div class="control-group <?php echo !empty($emailError)?'error':'';?>">
+            <div class="control-group">
                 <label class="control-label">Email</label>
                 <div class="controls">
-                    <input name="email" type="text" placeholder="Введите email" value="<?php echo !empty($email)?$email:'';?>">
-                    <?php if (!empty($emailError)): ?>
-                    <span class="help-inline"><?php echo $emailError;?></span>
-                    <?php endif;?>
+                    <input name="email" type="text" placeholder="Введите email" value="">
+
                 </div>
             </div>
-            <div class="control-group <?php echo !empty($passError)?'error':'';?>">
+            <div class="control-group">
                 <label class="control-label">Пароль</label>
                 <div class="controls">
-                    <input name="password" type="password" placeholder="Введите пароль" value="<?php echo !empty($pass)?$pass:'';?>">
-                    <?php if (!empty($passError)): ?>
-                    <span class="help-inline"><?php echo $passError;?></span>
-                    <?php endif;?>
+                    <input name="password" type="password" placeholder="Введите пароль" value="">
                 </div>
             </div>
             <div class="form-actions">

@@ -1,41 +1,25 @@
 <h1>Пользователи</h1>
-
-<?php
-
-   $db = new Db();
-   $sql = "select * from users";
-   $users = $db->query($sql);
-?>
-
 <div>
-
     <a href="?action=create"><button class="btn btn-sm btn-success">Новый пользователь</button></a>
-
-
 </div>
-
     <table class="table table-striped" style="width: 100%">
-
     <tr>
         <td class="col-lg-2" style="width: 5%">#</td>
         <td class="col-lg-4">Email</td>
         <td class="col-lg-4">Pass</td>
         <td class="col-lg-2">Actions</td>
     </tr>
-    <?php foreach ($users as $item) { ?>
+    <?php foreach ((new Crud)->getUsers() as $item) { ?>
     <tr>
         <td><?php echo $item['id'];?></td>
         <td><?php echo $item['email'];?></td>
         <td><?php echo $item['password'];?></td>
         <td>
             <a href="?action=update&?id=<?php echo $item['id'] ?>"><button class="btn btn-sm btn-primary">Edit</button></a>
-
             <a href="?action=delete&?id=<?php echo $item['id'] ?>"><button class="btn btn-sm btn-warning">Delete</button></a>
-
         </td>
     </tr>
         <?php } ?>
-
 </table>
 
 

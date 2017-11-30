@@ -1,28 +1,8 @@
-<?php
-    $id = 0;
-
-    if ( !empty($_GET['?id'])) {
-        $id = $_REQUEST['?id'];
-    }
-
-    if ( !empty($_POST)) {
-
-        $id = $_POST['id'];
-
-
-        $db = new Db();
-        $delete = $db->query("DELETE FROM users WHERE id = $id");
-        echo "<script>alert('Пользователь удален');</script>";
-        echo "<script>document.location.replace('?action=users');</script>";
-
-}
-?>
-
 <div class="container">
     <h1>Удалить пользователя?</h1>
 
-        <form class="form-horizontal" action="?action=delete&?id=<?php echo $id ?>" method="post">
-            <input type="hidden" name="id" value="<?php echo $id;?>"/>
+        <form class="form-horizontal" action="?action=delete&?id=<?php echo $_REQUEST['?id'] ?>" method="post">
+            <input type="hidden" name="id" value="<?php echo $_REQUEST['?id'];?>"/>
             <div class="form-actions">
                 <button type="submit" class="btn btn-danger">Да</button>
                 <a class="btn" href="?action=users">Нет</a>

@@ -1,57 +1,67 @@
 <h1>Настройки</h1>
 
-<script>function confirmDelete(){
-    if ( confirm("Удалить запись?") ){
-        return true;
-    } else {
+<script>
+    function confirmDelete() {
+        if (confirm("Удалить запись?")) {
+            return true;
+        }
         return false;
     }
-}</script>
+</script>
+
 
 <table class="table table-striped">
-    <tr>
-        <td class="col-sm-2" style="width: 5%">#</td>
-        <td class="col-sm-2" style="width: 10%">alias</td>
-        <td class="col-sm-2" style="width: 10%">value</td>
-        <td class="col-sm-2" style="width: 10%">creatred time</td>
-        <td class="col-sm-2" style="width: 10%">actions</td>
-    </tr>
+    <thead>
+        <tr>
+            <th style="width:10%;">#</th>
+            <th style="width:25%;">alias</th>
+            <th style="width:40%;">value</th>
+            <th style="width:10%;">creatred time</th>
+            <th style="width:15%;">actions</th>
+        </tr>
+    </thead>
+    <tbody>
     <?php foreach ((new Crud)->getSettings() as $item) { ?>
-    <tr>
-        <td><?php echo $item['id'];?></td>
-        <td><?php echo $item['alias'];?></td>
-        <td><?php echo $item['value'];?></td>
-        <td><?php echo $item['created_time'];?></td>
-        <td>
-            <a href="?action=settings&?edit=<?php echo $item['id'] ?>"  class="btn btn-sm btn-primary">Edit</a>
-
-            <a href="?action=settings&?del=<?php echo $item['id'] ?>" onclick="return confirmDelete();" class="btn btn-sm btn-warning">Delete</a>
-        </td>
-    </tr>
+        <tr>
+            <td><?php echo $item['id'];?></td>
+            <td><?php echo $item['alias'];?></td>
+            <td><?php echo $item['value'];?></td>
+            <td><?php echo $item['created_time'];?></td>
+            <td>
+                <a href="?action=settings&edit=1&id=<?php echo $item['id'] ?>"  class="btn btn-sm btn-primary">Edit</a>
+                <a href="?action=settings&del=1&id=<?php echo $item['id'] ?>" onclick="return confirmDelete();" class="btn btn-sm btn-warning">Delete</a>
+            </td>
+        </tr>
     <?php } ?>
+    </tbody>
 </table>
 
+
+
 <form method="post" action="?action=settings" >
+<?php 
+if ( isset($_GET['id'] ) ){
+    $setting = (new Crud)->getSettingById( (int)$_GET['id'] );
+}
+?>
 
-    <?php if (null !==(new Crud)->editSettings()) foreach ((new Crud)->editSettings() as $i)?>
-
-    <input type="hidden" name="id" value="<?php if(isset($_GET['?edit'])) { echo $_GET['?edit'];}   ?>">
+    <input type="hidden" name="id" value="<?php if(isset($_GET['id'])) { echo $_GET['id'];}   ?>">
 
     <div class="input-group">
-        <label>Alias</label>
-        <input type="text" name="alias" value="<?php if(isset($_GET['?edit'])) { echo $i['alias']; } ?>">
+        <span class="input-group-addon">Alias</span>
+        <input type="text" class="form-control" name="alias" value="<?php echo ( isset($setting['alias']) ? $setting['alias'] : "" ) ?>">
     </div>
     <div class="input-group">
-        <label>Value</label>
-        <input type="text" name="value" value="<?php if(isset($_GET['?edit'])) { echo $i['value']; }  ?>">
+        <span class="input-group-addon">Value</span>
+        <input type="text" class="form-control" name="value" value="<?php echo ( isset($setting['value']) ? $setting['value'] : "" ) ?>">
     </div>
     <div class="input-group">
 
-        <?php if (isset($_GET['?edit'])) { ?>
-        <button class="btn" type="submit" name="update" style="background: #556B2F;" >update</button>
-        <?php } else { ?>
+    <?php if (isset($_GET['edit'])) { ?>
+        <button class="btn btn-success" type="submit" name="update">update</button>
+    <?php } else { ?>
         <button class="btn" type="submit" name="save" >Save</button>
-        <?php } ?>
+    <?php } ?>
     </div>
 
 </form>

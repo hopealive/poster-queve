@@ -46,10 +46,8 @@ switch ($action) {
             $result = $crud->createSettings();
         } elseif (isset($_POST['update'])){
             $result = $crud->updateSettings();
-        } elseif (isset($_GET['?edit'])){
-            $result = $crud->editSettings();
-        } elseif (isset($_GET['?del'])){
-            $result = $crud->deleteSettings();
+        } elseif (isset($_GET['del'])){
+            $result = $crud->deleteSettings( (int)$_GET['id'] );
         }
         break;
     case "profile":
@@ -62,7 +60,7 @@ switch ($action) {
         }
         break;
     case "update":
-        if(isset($_GET['?id'])){
+        if(isset($_GET['id'])){
             $result = $crud->editUser();
         }
         break;

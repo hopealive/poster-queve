@@ -12,9 +12,9 @@
 
 .row { clear: both; }
 
-.col { float: left; margin-bottom: 20px; font: italic bold 82px 'Times New Roman', sans-serif; }
-.col.col-id { width: 200px; padding-left: 20px;   }
-.col.col-status { padding-left: 20px; width: 690px; }
+.col { float: left; margin-bottom: 20px; font: italic bold 80px 'Times New Roman', sans-serif; }
+.col.col-id { width: 250px; padding-left: 20px; }
+.col.col-status { padding-left: 20px; width: 640px; }
 
 .status-in-progress .col { background-color:#FFFF00; color: #000; }
 .status-complete .col { background-color:#00FF00; color: #000; }

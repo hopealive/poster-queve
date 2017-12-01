@@ -31,6 +31,14 @@ class Poster
         date_default_timezone_set('UTC');
         $this->transport = new Curl();
         $this->configs = (new Config())->configs;
+
+        //write from db
+        $configs = (new Crud())->getSettings();
+        if ( !empty($configs)){
+            foreach ( $configs as $config ){
+                $this->configs[$config['alias']] = $config['value'];
+            }
+        }
     }
 
     public function getLastTransactions()

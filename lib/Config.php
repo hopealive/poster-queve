@@ -8,8 +8,8 @@ class Config
 {
 
         public $configs = [
-            'url' => 'https://gregzorb.joinposter.com/api/',
-            'token' => '0690289d0f354269eda7a6537a9cec6b',
+            'url' => 'https://demo.joinposter.com/api/',
+            'token' => '4164553abf6a031302898da7800b59fb',
             'doneComment' => '+',
         ];
 

@@ -15,7 +15,7 @@ session_start();
 require_once('../lib/Log.php');
 require_once('../lib/Db.php');
 require_once('../lib/Auth.php');
-require_once ('../lib/Crud.php');
+require_once('../lib/Crud.php');
 require_once('../lib/View.php');
 require_once('../lib/Router.php');
 $crud = new Crud;

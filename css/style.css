@@ -23,14 +23,7 @@
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
 /* Slider */
-.poster-slider {  padding-top: 200px; }
 #slider { box-shadow:none; }
 #sliderFrame { width: 960px; }
-#slider, #slider .sliderInner { background: #000;  width: 960px; padding-top: 100px; }
-#slider, #slider .sliderInner {
-    height:1000px !important;
-}
-
-#slider .sliderInner { padding-top: 100px; }
-
+#slider, #slider .sliderInner { background: #000;  width: 960px;  height:1050px; }
 div.navBulletsWrapper {display:none;}

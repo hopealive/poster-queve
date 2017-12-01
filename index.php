@@ -9,6 +9,7 @@
         <link href="css/style.css" rel="stylesheet" type="text/css" />
     </head>
     <body>
+
         <div class="wrapper">
             <div class="full-hd-col order-data">
                 <div class="orders">
@@ -26,7 +27,7 @@
                 <div id="sliderFrame">
                     <div id="slider">
                         <?php
-                        for ( $i = 0; ++$i; $i <= 12 ){
+                        for ($i = 1; $i <= 12; $i++) {
                             echo '<img src="images/photo/'.$i.'.jpg" />';
                         }
                         ?>
@@ -36,34 +37,31 @@
         </div>
 
         <script src="https://code.jquery.com/jquery-3.2.1.min.js" crossorigin="anonymous"></script>
-
         <script src="js/custom.js" type="text/javascript"></script>
-
-        script src="js/jsImgSlider/themes/6/mcVideoPlugin.js" type="text/javascript"></script>
-        script src="js/jsImgSlider/themes/6/js-image-slider.js" type="text/javascript"></script>
+        <script src="js/jsImgSlider/themes/6/mcVideoPlugin.js" type="text/javascript"></script>
+        <script src="js/jsImgSlider/themes/6/js-image-slider.js" type="text/javascript"></script>
         <script>
-//            var sliderOptions =
-//                    {
-//                        sliderId: "slider",
-//                        startSlide: 0,
-//                        effect: "17,13,1",
-//                        effectRandom: true,
-//                        pauseTime: 2500,
-//                        transitionTime: 1000,
-//                        slices: 14,
-//                        boxes: 8,
-//                        hoverPause: 1,
-//                        autoAdvance: true,
-//                        captionOpacity: 0.3,
-//                        captionEffect: "fade",
-//                        thumbnailsWrapperId: "thumbs",
-//                        m: false,
-//                        license: "mylicense"
-//                    };
-//
-//            var imageSlider = new mcImgSlider(sliderOptions);
-        </script>
+            var sliderOptions =
+                    {
+                        sliderId: "slider",
+                        startSlide: 0,
+                        effect: "17,13,1",
+                        effectRandom: true,
+                        pauseTime: 2500,
+                        transitionTime: 1000,
+                        slices: 14,
+                        boxes: 8,
+                        hoverPause: 1,
+                        autoAdvance: true,
+                        captionOpacity: 0.3,
+                        captionEffect: "fade",
+                        thumbnailsWrapperId: "thumbs",
+                        m: false,
+                        license: "mylicense"
+                    };
 
+            var imageSlider = new mcImgSlider(sliderOptions);
+        </script>
 
     </body>
 </html>

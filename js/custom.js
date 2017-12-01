@@ -13,21 +13,27 @@ function updateData() {
                 var vRow = '';
 
                 if (row['status'] == 102) {
-                    vRow += '<div class="row status-complete">';
-                    vRow += '<div class="col col-id">' + row['id'] + '</div>';
-                    vRow += '<div class="col col-status">Готово</div>';
-                    vRow += '</div>';
+                    vRow += '<div class="row status-complete">'
+                        + '<div class="col col-id">' + row['id'] + '</div>'
+                        + '<div class="col col-status">Готово</div>'
+                        + '</div>';
                 } else {
-                    vRow += '<div class="row status-in-progress"">';
-                    vRow += '<div class="col col-id">' + row['id'] + '</div>';
-                    vRow += '<div class="col col-status">Очікування</div>';
-                    vRow += '</div>';
+                    vRow += '<div class="row status-in-progress">'
+                        + '<div class="col col-id">' + row['id'] + '</div>'
+                        + '<div class="col col-status">Очікування</div>'
+                        + '</div>';
                 }
 
                 $('.order-body').append(vRow);
             });
             window.setTimeout('updateData()', timeDelay.normal);
         } else {
+            var vRow = '<div class="row status-in-progress">'
+                        + '<div class="col col-id">&nbsp;</div>'
+                        + '<div class="col col-status">Немає замовлень</div>'
+                        + '</div>';
+                
+            $('.order-body').empty().append(vRow);
             window.setTimeout('updateData()', timeDelay.empty);
         }
     };

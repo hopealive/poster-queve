@@ -27,6 +27,9 @@
 #slider { box-shadow:none; }
 #sliderFrame { width: 960px; }
 #slider, #slider .sliderInner { background: #000;  width: 960px; padding-top: 100px; }
+#slider, #slider .sliderInner {
+    height:1000px !important;
+}
 
 #slider .sliderInner { padding-top: 100px; }
 

@@ -10,9 +10,9 @@
 .wrapper { display: block; width: 1920px; min-height: 1080px; overflow:hidden; }
 .full-hd-col { display: block; width: 960px; min-height: 1080px; float: left; }
 
-.row { clear: both; font-style: italic; font-weight: bold; }
+.row { clear: both; }
 
-.col { float: left; margin-bottom: 20px;font-size: 82px;  }
+.col { float: left; margin-bottom: 20px; font: italic bold 82px 'Times New Roman', sans-serif; }
 .col.col-id { width: 200px; padding-left: 20px;   }
 .col.col-status { padding-left: 20px; width: 690px; }
 

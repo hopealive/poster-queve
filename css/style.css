@@ -25,5 +25,5 @@
 /* Slider */
 #slider { box-shadow:none; }
 #sliderFrame { width: 960px; }
-#slider, #slider .sliderInner { background: #000;  width: 960px;  height:1050px; }
+#slider, #slider .sliderInner { background: #E6E6E6;  width: 960px;  height:1070px; }
 div.navBulletsWrapper {display:none;}

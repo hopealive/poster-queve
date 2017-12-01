@@ -74,38 +74,26 @@ public function deleteSettings()
         return $users;
     }
 
-    public function createUser(){
-
-
-        if ( !empty($_POST)) {
-
-            $email = $_POST['email'];
-            $pass = md5($_POST['password']);
-            $valid = true;
-
-            if (empty($email)) {
-              $valid = false;
-          } else if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-              $valid = false;
-          }
-
-          if (empty($_POST['password'])) {
-              $valid = false;
-          } elseif (strlen($_POST['password']) < 6) {
-              $valid = false;
-
-          }
-
-            if ($valid) {
-                $create = (new Db)->query("INSERT INTO users VALUES (NULL , :email, :password)", array("email"=>"$email", "password"=>"$pass"));
-                echo "<script>alert('Пользователь создан');</script>";
-                echo "<script>document.location.replace('?action=users');</script>";
+    public function createUser()
+    {
+        $valid = $this->isValidUser();
+        if ( $valid['status'] !== 'ok' ){
+            $flashMessage = "Ошибка. Попробуйте позже";
+            if ( isset($valid['message']) ){
+                $flashMessage = $valid['message'];
             }
+            echo "<script>alert('".$flashMessage."');</script>";
+            return false;
         }
 
+        $email = $_POST['email'];
+        $pass  = md5($_POST['password']);
+
+        $create = (new Db)->query("INSERT INTO users VALUES (NULL , :email, :password)",
+                array("email" => "$email", "password" => "$pass"));
+            echo "<script>alert('Пользователь создан');</script>";
+            echo "<script>document.location.replace('?action=users');</script>";
     }
-
-
 
     public function editUser(){
 
@@ -148,5 +136,30 @@ public function deleteSettings()
             echo "<script>document.location.replace('?action=users');</script>";
 
         }
+    }
+
+    protected function isValidUser()
+    {
+        if (empty($_POST)) {
+            return ['status' => 'error', 'message' => 'Введены пустые данные'];
+        }
+
+        if (empty($_POST['email'])) {
+            return ['status' => 'error', 'message' => 'Введен пустой email'];
+        }
+
+        if (!filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
+            return ['status' => 'error', 'message' => 'Имя пользователя не является email"ом'];
+        }
+
+        if (empty($_POST['password'])) {
+            return ['status' => 'error', 'message' => 'Не введен пароль'];
+        }
+
+        if (strlen($_POST['password']) < 8) {
+            return ['status' => 'error', 'message' => 'Пароль должен быть не менее 8 символов'];
+        }
+
+        return ['status' => 'ok'];
     }
 }

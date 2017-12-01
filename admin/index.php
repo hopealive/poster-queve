@@ -57,7 +57,7 @@ switch ($action) {
     case "users":
         break;
     case "create":
-        if(isset($_POST)){
+        if(!empty($_POST)){
             $result = $crud->createUser();
         }
         break;

@@ -41,6 +41,23 @@ switch ($action) {
         break;
     case "slider":
         break;
+    case "slider-upload":
+        $result = $crud->uploadSliderImage();
+        if ( $result ){
+            Router::redirect('/admin?action=slider');
+        } else {
+            echo "Ошибка загрузки";
+        }
+        break;
+    case "slider-delete":
+        $result = $crud->deleteSliderImage( (int) $_POST['key']);
+        if ( $result ){
+            $result = ["status" => "ok", "message" => "Файл удален"];
+        } else {
+            $result = ["status" => "error", "message" => "Ошибка загрузки"];
+        }
+        return;
+        break;
     case "settings":
         if(isset($_POST['save'])) {
             $result = $crud->createSettings();

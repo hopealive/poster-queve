@@ -1,13 +1,37 @@
 <h1>Медиафайлы слайдер</h1>
 <section class="row text-center placeholders">
-    <form enctype="multipart/form-data">
+    <form enctype="multipart/form-data" action="index.php?action=slider-upload" method="post">
         <div class="form-group">
             <div class="file-loading">
                 <label>Preview</label>
-                <input id="multimedia-upload" type="file" multiple>
+                <input id="multimedia-upload" name="multimedia-upload[]" type="file" multiple>
             </div>
         </div>
+        <input type="submit">
     </form>
+
+<?php
+$initialPreview = array();
+$initialPreviewConfig = array();
+
+$images = (new Crud())->getSliderImages();
+if ( !empty($images)){
+    $i = 0;
+    foreach ( $images as $image ){
+        $initialPreview[] = '"/images/'.$image['src'].'"';
+        $imageConfig = array(
+            "caption" => "Image # $i",
+            "size" => 0,
+            "width" => "120px",
+            "url" => "index.php?action=slider-delete",
+            "key" => $i,
+        );
+        $initialPreviewConfig[] = json_encode($imageConfig);
+        ++$i;
+    }
+}
+
+?>
 </section>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-fileinput/4.4.5/js/fileinput.min.js"></script>
@@ -27,14 +51,15 @@
         overwriteInitial: false,
         initialPreviewAsData: true,
         initialPreview: [
-            "/images/image-slider-1.jpg",
-            "/images/image-slider-2.jpg",
-            "/images/image-slider-3.jpg",
+            <?php echo (!empty($initialPreview) ? implode(",", $initialPreview) : "" ) ?>
         ],
         initialPreviewConfig: [
-            {caption: "/images/thumb1.jpg", size: 329892, width: "120px", url: "{$url}", key: 1},
-            {caption: "/images/thumb2.jpg", size: 872378, width: "120px", url: "{$url}", key: 2},
-            {caption: "/images/thumb3.jpg", size: 632762, width: "120px", url: "{$url}", key: 3}
-        ]
+            <?php echo (!empty($initialPreviewConfig) ? implode(",", $initialPreviewConfig) : "" ) ?>
+
+        ],
+        allowedFileExtensions: ['jpg', 'png', 'gif'],
+        maxFileSize: 10000,
+        maxFilesNum: 3,
+        uploadUrl: "index.php?action=slider-upload"
     });
 </script>

@@ -18,8 +18,7 @@ class Crud
 
     public function getSettings()
     {
-        $settings = (new Db())->query("select * from settings");
-        return $settings;
+        return (new Db())->query("select * from settings");
     }
 
     public function createSettings()
@@ -161,5 +160,49 @@ class Crud
         }
 
         return ['status' => 'ok'];
+    }
+    ###
+    #Slider block
+    ###
+
+    public function getSliderImages()
+    {
+        return (new Db())->query("select src from slider ORDER BY position ASC");
+    }
+
+    public function uploadSliderImage()
+    {
+        $uploaddir = ROOT.DS.'images';
+        foreach ($_FILES["multimedia-upload"]["error"] as $key => $error) {
+            if ($error == UPLOAD_ERR_OK) {
+                $tmp_name = $_FILES["multimedia-upload"]["tmp_name"][$key];
+                $name     = basename($_FILES["multimedia-upload"]["name"][$key]);
+                $src = $uploaddir.DS.$name;
+                if (!move_uploaded_file($tmp_name, $src)){
+                    return false;
+                }
+                if (!$this->saveSliderImage($name)){
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    protected function saveSliderImage($name)
+    {
+        return (new Db)->query("INSERT INTO slider VALUES (NULL , :position, :src)",
+            array("position" => 1, "src" => "$name"));
+    }
+
+    public function deleteSliderImage($id)
+    {
+         $delete = (new Db())->query("DELETE FROM slider WHERE id = :id",
+            array("id" => $id));
+        echo "<script>alert('Рисунок удален');</script>";
+        echo "<script>document.location.replace('?action=slider');</script>";
+       
     }
 }

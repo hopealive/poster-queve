@@ -15,9 +15,10 @@ session_start();
 require_once('../lib/Log.php');
 require_once('../lib/Db.php');
 require_once('../lib/Auth.php');
+require_once ('../lib/Crud.php');
 require_once('../lib/View.php');
 require_once('../lib/Router.php');
-
+$crud = new Crud;
 $Auth       = new Auth;
 $isLoggedIn = $Auth->loggedIn();
 
@@ -41,14 +42,34 @@ switch ($action) {
     case "slider":
         break;
     case "settings":
+        if(isset($_POST['save'])) {
+            $result = $crud->createSettings();
+        } elseif (isset($_POST['update'])){
+            $result = $crud->updateSettings();
+        } elseif (isset($_GET['?edit'])){
+            $result = $crud->editSettings();
+        } elseif (isset($_GET['?del'])){
+            $result = $crud->deleteSettings();
+        }
         break;
     case "profile":
         break;
+    case "users":
+        break;
     case "create":
+        if(isset($_POST)){
+            $result = $crud->createUser();
+        }
         break;
     case "update":
+        if(isset($_GET['?id'])){
+            $result = $crud->editUser();
+        }
         break;
     case "delete":
+        if(isset($_POST['id'])){
+            $result = $crud->deleteUser();
+        }
         break;
     case "logout":
         $Auth->logout();

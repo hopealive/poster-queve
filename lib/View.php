@@ -10,34 +10,20 @@ class View
     protected $data;
     protected $path;
 
-    protected static function getDefaultViewPath()
+    public function __construct($path = null, $data = array())
     {
-        $router = App::getRouter();
-        if (!$router) {
-            return false;
-        }
-
-        $role_dir = $router->getRolePrefix();
-        $template_name  = $router->getMethodPrefix().$router->getAction().'.html';
-        return VIEWS_PATH.DS.$role_dir.DS.$template_name;
-    }
-
-    public function __construct($data = array(), $path = null)
-    {
-        if (!$path) {
-//            $path = self::getDefaultViewPath(); //TODO
-        }
-        if (!file_exists($path)) {
-            throw new Exception('Template file is not found in path: '.$path);
-        }
-        $this->path = $path;
+        $this->path = VIEWS_PATH.DS.$path;
         $this->data = $data;
     }
 
-    public function render()
+    public function render($path = "")
     {
-        $data    = $this->data;
+        $data = $this->data;
         ob_start();
+        if ( !empty($path)){
+            $this->path = VIEWS_PATH.DS.$path;
+        }
+        
         include($this->path);
         $content = ob_get_clean();
         return $content;

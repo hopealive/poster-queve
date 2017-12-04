@@ -1,1 +1,83 @@
 <h1>Главная</h1>
+<h2>Текущие заказы</h2>
+<?php
+$poster = new Poster();
+
+//Pagintator
+$total = $poster->getTransactionTotal();
+$limit = 20;
+$pages = ceil($total / $limit);
+
+$page = min($pages,
+    filter_input(INPUT_GET, 'page', FILTER_VALIDATE_INT,
+        array(
+            'options' => array(
+                'default' => 1,
+                'min_range' => 1,
+            ),
+        )
+    )
+);
+function getPaginatroLink($pageId)
+{
+    $getParams = $_GET;
+    unset($getParams['page']);
+    $getParams['page'] = $pageId;
+    echo '?'.http_build_query($getParams);
+}
+$orders   = $poster->getPaginateTransactions(($page-1), $limit);
+$statuses = $poster->getStatuses();
+?>
+
+<?php if (!empty($orders)) { ?>
+    <div class="container">
+        <div class="row">
+            <nav aria-label="Page navigation">
+                <ul class="pagination">
+                    <?php if ($page > 1) { ?>
+                    <li class="page-item"><a class="page-link" href="<?php echo getPaginatroLink(1) ?>">First</a></li>
+                    <li class="page-item"><a class="page-link" href="<?php echo getPaginatroLink($page-1) ?>">Previous</a></li>
+                    <li class="page-item"><a class="page-link" href="<?php echo getPaginatroLink($page-1) ?>"><?php echo ($page-1) ?></a></li>
+                    <?php } ?>
+                    <li class="page-item active"><span class="page-link"><?php echo $page ?></span></li>
+                    <?php if($pages > 1 && $page < $pages){ ?>
+                    <li class="page-item"><a class="page-link" href="<?php echo getPaginatroLink($page+1) ?>"><?php echo ($page+1) ?></a></li>
+                    <?php } ?>
+                    <?php if ($page < $pages) { ?>
+                        <li class="page-item"><a class="page-link" href="<?php echo getPaginatroLink($page+1) ?>">Next</a></li>
+                    <?php } ?>
+                    <?php if($pages > 3 && $page < $pages){ ?>
+                    <li class="page-item"><a class="page-link" href="<?php echo getPaginatroLink($pages) ?>">Last</a></li>
+                    <?php } ?>
+                </ul>
+            </nav>
+        </div>
+
+        <div class="row">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Статус в системе</th>
+                        <th>Статус в терминале</th>
+                        <th>Дата последнего обновления</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($orders as $order) { ?>
+                        <tr>
+                            <td scope="row"><?php echo $order['id']; ?></td>
+                            <td><?php echo $statuses['general'][$order['status']]; ?></td>
+                            <td><?php echo $statuses['poster'][$order['origin_status']]; ?></td>
+                            <td><?php echo $order['last_date']; ?></td>
+                        </tr>
+
+                    <?php } ?>
+                </tbody>
+            </table>
+        </div>
+
+
+    </div>
+
+<?php } ?>

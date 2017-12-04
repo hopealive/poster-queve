@@ -1,0 +1,25 @@
+<?php 
+$view = new View();
+$isLoggedIn = $this->data['isLoggedIn'];
+?>
+<!doctype html>
+<html lang="en">
+    <?php echo $view->render('admin/layouts/head.html'); ?>
+    <body>
+        <?php if (!$isLoggedIn){ echo $view->render('admin/login.html'); } ?>
+
+        <?php if ($isLoggedIn) { ?>
+            <?php echo $view->render('admin/layouts/header-nav.html'); ?>
+
+            <div class="container-fluid">
+                <div class="row">
+                    <?php echo $view->render('admin/layouts/left-menu.html'); ?>
+                    <main role="main" class="col-sm-9 ml-sm-auto col-md-10 pt-3">
+                        <?php echo $view->render('admin/'.$this->data['action'].'.html'); ?>
+                    </main>
+                </div>
+            </div>
+        <?php } ?>
+
+    </body>
+</html>

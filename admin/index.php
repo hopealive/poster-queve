@@ -1,23 +1,17 @@
 <?php
 error_reporting(E_ALL);
+session_start();
+date_default_timezone_set('Europe/Kiev');
+
 define('DS', DIRECTORY_SEPARATOR);
 define('ROOT', dirname(dirname(__FILE__)));
 define('ADMIN_PATH', dirname(dirname(__FILE__)).DS.'admin');
 define('VIEWS_PATH', ROOT.DS.'view');
 
-session_start();
+require_once(ROOT.DS.'lib'.DS.'App.php');
+App::run($_SERVER['REQUEST_URI']);
 
 
-//TODO:
-//require_once(ROOT.DS.'lib'.DS.'init.php');
-//App::run($_SERVER['REQUEST_URI']);
-
-require_once('../lib/Log.php');
-require_once('../lib/Db.php');
-require_once('../lib/Auth.php');
-require_once('../lib/Crud.php');
-require_once('../lib/View.php');
-require_once('../lib/Router.php');
 $crud = new Crud;
 $Auth       = new Auth;
 $isLoggedIn = $Auth->loggedIn();
@@ -95,41 +89,12 @@ switch ($action) {
         Router::redirect('/admin?action=login');
         break;
 }
+
+$view = new View(
+    'admin/layouts/default.html',
+    compact('isLoggedIn', 'action')
+);
+
+echo $view->render();
 ?>
 
-<!doctype html>
-<html lang="en">
-    <?php
-    $view = new View(array(),VIEWS_PATH.DS.'admin/layouts/head.html');
-    echo $view->render();
-    ?>
-    <body>
-        <?php if (!$isLoggedIn){
-            $view = new View(array(),VIEWS_PATH.DS.'admin/login.html');
-            echo $view->render();
-        } ?>
-
-        <?php if ($isLoggedIn) { ?>
-            <?php
-            $view = new View(array(),VIEWS_PATH.DS.'admin/layouts/header-nav.html');
-            echo $view->render();
-            ?>
-
-            <div class="container-fluid">
-                <div class="row">
-                    <?php
-                    $view = new View(array(),VIEWS_PATH.DS.'admin/layouts/left-menu.html');
-                    echo $view->render();
-                    ?>
-                    <main role="main" class="col-sm-9 ml-sm-auto col-md-10 pt-3">
-                        <?php
-                        $view = new View(array(),VIEWS_PATH.DS.'admin/'.$action.'.html');
-                        echo $view->render();
-                        ?>
-                    </main>
-                </div>
-            </div>
-        <?php } ?>
-
-    </body>
-</html>

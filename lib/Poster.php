@@ -4,13 +4,12 @@
  *
  * @author gregzorb
  */
-require_once('lib/Curl.php');
-require_once('lib/Config.php');
 
 class Poster
 {
     private $transport,
         $configs;
+    
     public $transactionStatuses = array(
         1 => "открыт",
         2 => "закрыт",
@@ -20,8 +19,8 @@ class Poster
     const STATUS_POSTER_OPENED  = 1;
     const STATUS_POSTER_CLOSE   = 2;
     const STATUS_POSTER_DELETED = 3;
-    const STATUS_WAITING = 101;
-    const STATUS_DONE    = 102;
+    const STATUS_WAITING        = 101;
+    const STATUS_DONE           = 102;
 
     public function __construct()
     {
@@ -42,11 +41,43 @@ class Poster
 
     public function getLastTransactions()
     {
-        $yesterday = date("Ymd", time() - 60 * 60 * 24);
+        $dateFrom = date("Ymd", time() - 60 * 60 * 24);
+        $params = array('dateFrom' => $dateFrom);
+        $transactions = $this->getTransactions($params);
+        $transactions = $this->mapTransactions($transactions);
+        $result = $this->convertedByStatus($transactions);
+        $result = array_slice($result, 0, 8);
+        return $result;
+    }
+
+    public function getPaginateTransactions($offset, $length)
+    {
+        $dateFrom = date("Ymd", time() - 60 * 60 * 24);
+        $params = array('dateFrom' => $dateFrom);
+        $transactions = $this->getTransactions($params);
+        $transactions = $this->mapTransactions($transactions);
+        $result = $this->convertedByStatus($transactions);
+        $result = array_slice($result, $length*$offset, $length);
+        return $result;
+    }
+
+    public function getTransactionTotal()
+    {
+        $dateFrom = date("Ymd", time() - 60 * 60 * 24);
+        $params = array('dateFrom' => $dateFrom);
+        $transactions = $this->getTransactions($params);
+        return count($transactions['response']);
+    }
+
+    protected function getTransactions($params = array() )
+    {
+        if ( isset($params['dateFrom'])){
+            $dateFrom = $params['dateFrom'];
+        }
 
         $params = array(
             'include_products' => false,
-            'dateFrom' => $yesterday,
+            'dateFrom' => $dateFrom,
             'token' => $this->configs['token'],
         );
 
@@ -56,24 +87,7 @@ class Poster
         if (empty($transactions['response'])) {
             return array();
         }
-
-        $transactions = $this->mapTransactions($transactions);
-
-        $result = array();
-        if (isset($transactions[self::STATUS_DONE])) {
-            $sorted = $this->sortTransactions($transactions[self::STATUS_DONE]);
-            $result = array_merge($result, $sorted);
-        }
-
-        if (isset($transactions[self::STATUS_WAITING])) {
-            $sorted = $this->sortTransactions($transactions[self::STATUS_WAITING]);
-            $result = array_merge($result, $sorted);
-        }
-
-        $result = array_slice($result, 0, 8);
-
-
-        return $result;
+        return $transactions;
     }
 
     protected function mapTransactions($transactions)
@@ -99,9 +113,11 @@ class Poster
             );
 
             if ($t['date_close'] > 0) {
-                $row['last_date'] = date("Y-m-d H:i:s", (int)round($t['date_close'] / 1000) );
+                $row['last_date'] = date("Y-m-d H:i:s",
+                    (int) round($t['date_close'] / 1000));
             } elseif ($t['date_start'] > 0) {
-                $row['last_date'] = date("Y-m-d H:i:s", (int)round($t['date_start'] / 1000) );
+                $row['last_date'] = date("Y-m-d H:i:s",
+                    (int) round($t['date_start'] / 1000));
             }
 
             $resultByStatus[$status][] = $row;
@@ -113,15 +129,52 @@ class Poster
         return $resultByStatus;
     }
 
-    protected function sortTransactions($result)
+    protected function convertedByStatus($transactions)
     {
-        function cmp($a, $b) {
-            if (strtotime($a['last_date']) < strtotime($b['last_date'])) {
-                return 1;
-            }
+        $result = array();
+        if (isset($transactions[self::STATUS_DONE])) {
+            $sorted = $this->sortTransactions($transactions[self::STATUS_DONE]);
+            $result = array_merge($result, $sorted);
         }
 
-        usort($result, "cmp" );
+        if (isset($transactions[self::STATUS_WAITING])) {
+            $sorted = $this->sortTransactions($transactions[self::STATUS_WAITING]);
+            $result = array_merge($result, $sorted);
+        }
         return $result;
+    }
+
+    protected function sortTransactions($result)
+    {
+        usort($result, array(new Comp(), 'compare'));
+        return $result;
+    }
+
+    public function getStatuses()
+    {
+        return array(
+            'general' => array(
+                self::STATUS_WAITING => "Ожидание",
+                self::STATUS_DONE => "Выполнен",
+            ),
+            'poster' => array(
+                self::STATUS_POSTER_OPENED => "Открыт",
+                self::STATUS_POSTER_CLOSE => "Закрыт",
+                self::STATUS_POSTER_DELETED => "Удален",
+
+            ),
+        );
+
+    }
+}
+
+class Comp
+{
+
+    public function compare($a, $b)
+    {
+        if (strtotime($a['last_date']) < strtotime($b['last_date'])) {
+            return 1;
+        }
     }
 }

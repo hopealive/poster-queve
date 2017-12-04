@@ -13,13 +13,16 @@ class Auth
     const ROOT_PASSWORD = 'fe01ce2a7fbac8fafaed7c982a04e229';
     protected $db = null;
 
+
     protected function getLogins()
     {
         $this->db = new DB();
         $logins = $this->db->query("select id, email From users WHERE 1");
 
-        $result = array(0 => self::ROOT_LOGIN);
-        if(!empty($logins)){
+        $result = array();
+        if(empty($logins)){
+            $result[] = self::ROOT_LOGIN;
+        } else {
             foreach ( $logins as $l ){
                 $result[ $l['id'] ] = $l['email'];
             }

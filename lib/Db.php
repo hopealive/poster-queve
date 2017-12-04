@@ -46,18 +46,36 @@ class DB
      */
     private function Connect()
     {
-        $dsn = 'sqlite:'.ROOT.DS.'db/komora.sqlite';
+        $this->settings = parse_ini_file("settings.ini.php");
+        $dbtype = $this->settings['dbtype'];
 
+        
         try {
-            # Read settings from INI file, set UTF8
-            $this->pdo = new PDO($dsn);
-            
-            # We can now log any exceptions on Fatal error. 
+            switch ($dbtype) {
+                case 'mysql';
+                    $dsn       = 'mysql:dbname='.$this->settings["dbname"].';host='.$this->settings["dbhost"].';charset=utf8';
+                    $this->pdo = new PDO($dsn, $this->settings["dbuser"],
+                        $this->settings["dbpassword"],
+                        array(
+                        PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8"
+                    ));
+                    break;
+                case 'sqlite';
+                    $dsn       = 'sqlite:'.ROOT.DS.'db/komora.sqlite';
+                    $this->pdo = new PDO($dsn);
+                    break;
+                default:
+                    echo $this->ExceptionLog('Wrong db type');
+                    die();
+                    break;
+            }
+
+            # We can now log any exceptions on Fatal error.
             $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            
+
             # Disable emulation of prepared statements, use REAL prepared statements instead.
             $this->pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
-            
+
             # Connection succeeded, set the boolean to true.
             $this->bConnected = true;
         }
@@ -67,6 +85,7 @@ class DB
             die();
         }
     }
+    
     /*
      *   You can use this little method if you want to close the PDO connection
      *

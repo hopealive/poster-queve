@@ -1,3 +1,4 @@
+<?php $crud = new Crud(); ?>
 <h1>Настройки</h1>
 
 <script>
@@ -21,7 +22,7 @@
         </tr>
     </thead>
     <tbody>
-    <?php foreach ((new Crud)->getSettings() as $item) { ?>
+    <?php foreach ($crud->getSettings() as $item) { ?>
         <tr>
             <td><?php echo $item['id'];?></td>
             <td><?php echo $item['alias'];?></td>
@@ -41,7 +42,7 @@
 <form method="post" action="?action=settings" >
 <?php 
 if ( isset($_GET['id'] ) ){
-    $setting = (new Crud)->getSettingById( (int)$_GET['id'] );
+    $setting = $crud->getSettingById( (int)$_GET['id'] );
 }
 ?>
 

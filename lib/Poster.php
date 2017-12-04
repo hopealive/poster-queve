@@ -98,13 +98,10 @@ class Poster
                 'last_date' => date("Y-m-d H:i:s"),
             );
 
-            $date = new DateTime();
             if ($t['date_close'] > 0) {
-                $date->setTimestamp(round($t['date_close'] / 1000));
-                $row['last_date'] = $date->format("Y-m-d H:i:s");
+                $row['last_date'] = date("Y-m-d H:i:s", (int)round($t['date_close'] / 1000) );
             } elseif ($t['date_start'] > 0) {
-                $date->setTimestamp(round($t['date_start'] / 1000));
-                $row['last_date'] = $date->format("Y-m-d H:i:s");
+                $row['last_date'] = date("Y-m-d H:i:s", (int)round($t['date_start'] / 1000) );
             }
 
             $resultByStatus[$status][] = $row;

@@ -48,12 +48,11 @@ class DB
     {
         $this->settings = parse_ini_file("settings.ini.php");
         $dbtype = $this->settings['dbtype'];
-
         
         try {
             switch ($dbtype) {
                 case 'mysql';
-                    $dsn       = 'mysql:dbname='.$this->settings["dbname"].';host='.$this->settings["dbhost"].';charset=utf8';
+                    $dsn = 'mysql:dbname='.$this->settings["dbname"].';host='.$this->settings["dbhost"].';charset=utf8';
                     $this->pdo = new PDO($dsn, $this->settings["dbuser"],
                         $this->settings["dbpassword"],
                         array(
@@ -61,7 +60,7 @@ class DB
                     ));
                     break;
                 case 'sqlite';
-                    $dsn       = 'sqlite:'.ROOT.DS.'db/komora.sqlite';
+                    $dsn = 'sqlite:'.$this->settings["dbfilename"];
                     $this->pdo = new PDO($dsn);
                     break;
                 default:

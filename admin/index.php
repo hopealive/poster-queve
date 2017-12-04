@@ -37,9 +37,6 @@ switch ($action) {
         $result = $Auth->authenticate($_POST);
         if ( $result ){
             Router::redirect('/admin?action=index');
-        } else {
-            $Auth->logout();
-            Router::redirect('/admin?action=login');
         }
         break;
     case "slider":
@@ -98,23 +95,37 @@ switch ($action) {
         Router::redirect('/admin?action=login');
         break;
 }
-
 ?>
 
 <!doctype html>
 <html lang="en">
-    <?php echo (new View([],VIEWS_PATH.DS.'admin/layouts/head.html'))->render(); ?>
+    <?php
+    $view = new View(array(),VIEWS_PATH.DS.'admin/layouts/head.html');
+    echo $view->render();
+    ?>
     <body>
-        <?php if (!$isLoggedIn) echo (new View([],VIEWS_PATH.DS.'admin/login.html'))->render();  ?>
+        <?php if (!$isLoggedIn){
+            $view = new View(array(),VIEWS_PATH.DS.'admin/login.html');
+            echo $view->render();
+        } ?>
 
         <?php if ($isLoggedIn) { ?>
-            <?php echo (new View([],VIEWS_PATH.DS.'admin/layouts/header-nav.html'))->render(); ?>
+            <?php
+            $view = new View(array(),VIEWS_PATH.DS.'admin/layouts/header-nav.html');
+            echo $view->render();
+            ?>
 
             <div class="container-fluid">
                 <div class="row">
-                    <?php echo (new View([],VIEWS_PATH.DS.'admin/layouts/left-menu.html'))->render(); ?>
+                    <?php
+                    $view = new View(array(),VIEWS_PATH.DS.'admin/layouts/left-menu.html');
+                    echo $view->render();
+                    ?>
                     <main role="main" class="col-sm-9 ml-sm-auto col-md-10 pt-3">
-                        <?php echo (new View([],VIEWS_PATH.DS.'admin/'.$action.'.html'))->render(); ?>
+                        <?php
+                        $view = new View(array(),VIEWS_PATH.DS.'admin/'.$action.'.html');
+                        echo $view->render();
+                        ?>
                     </main>
                 </div>
             </div>

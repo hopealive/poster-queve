@@ -14,7 +14,8 @@
 $initialPreview = array();
 $initialPreviewConfig = array();
 
-$images = (new Crud())->getSliderImages();
+$crud = new Crud();
+$images = $crud->getSliderImages();
 if ( !empty($images)){
     $i = 1;
     foreach ( $images as $image ){

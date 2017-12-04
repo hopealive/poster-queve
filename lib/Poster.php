@@ -26,8 +26,13 @@ class Poster
     {
         date_default_timezone_set('UTC');
         $this->transport = new Curl();
-        $configClass     = new Config();
-        $this->configs   = $configClass->configs;
+
+        $settings = parse_ini_file(ROOT.DS."db/settings.ini.php");
+        $this->configs   = array(
+            'url' => $settings['demo_url'],
+            'token' => $settings['demo_token'],
+            'doneComment' => $settings['demo_doneComment'],
+        );
 
         //write from db
         $crud    = new Crud();

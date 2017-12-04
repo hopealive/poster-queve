@@ -14,7 +14,7 @@ class Auth
     protected $db = null;
 
 
-    protected function getLogins()
+    public function getLogins()
     {
         $this->db = new DB();
         $logins = $this->db->query("select id, email From users WHERE 1");
@@ -72,12 +72,14 @@ class Auth
 
         if ( $request['email'] == self::ROOT_LOGIN AND
             md5($request['password']) == self::ROOT_PASSWORD ){
+            $_SESSION['admin_id'] = 0;
             $_SESSION['authorized'] = 1;
             return true;
         }
 
         $id = (int)array_search($request['email'], $this->getLogins() );
         if ($id > 0 && md5($request['password']) == $this->getPassById($id) ){
+            $_SESSION['admin_id'] = $id;
             $_SESSION['authorized'] = 1;
             return true;
         }

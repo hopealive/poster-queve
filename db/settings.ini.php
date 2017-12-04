@@ -2,8 +2,8 @@
 [DB]
 ;mysql|sqlite
 dbtype = mysql
-[SQL]
 
+[SQL]
 dbhost = localhost
 dbuser = prmusic1_poster
 dbpassword = 637vfuGeA
@@ -15,4 +15,7 @@ dbfilename = /../db/komora.sqlite
 [LOG]
 tmp_dir = /../tmp/logs/
 
-
+[DEMO]
+demo_url = https://demo.joinposter.com/api/
+demo_token = 4164553abf6a031302898da7800b59fb
+demo_doneComment = +

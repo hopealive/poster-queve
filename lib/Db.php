@@ -46,7 +46,7 @@ class DB
      */
     private function Connect()
     {
-        $this->settings = parse_ini_file("settings.ini.php");
+        $this->settings = parse_ini_file(ROOT.DS."db/settings.ini.php");
         $dbtype = $this->settings['dbtype'];
         
         try {
@@ -56,8 +56,8 @@ class DB
                     $this->pdo = new PDO($dsn, $this->settings["dbuser"],
                         $this->settings["dbpassword"],
                         array(
-                        PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8"
-                    ));
+                            PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8"
+                        ));
                     break;
                 case 'sqlite';
                     $dsn = 'sqlite:'.$this->settings["dbfilename"];

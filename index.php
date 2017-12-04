@@ -10,11 +10,9 @@ date_default_timezone_set('Europe/Kiev');
 
 require_once('lib/Log.php');
 require_once('lib/Db.php');
-require_once('lib/Auth.php');
 require_once('lib/Crud.php');
-require_once('lib/View.php');
-require_once('lib/Router.php');
 $crud = new Crud;
+$images = $crud->getSliderImages();
 
 ?>
 
@@ -43,8 +41,6 @@ $crud = new Crud;
                     </div>
                 </div>
             </div>
-
-            <?php $images = $crud->getSliderImages(); ?>
 
             <?php if(!empty($images)){ ?>
             <div class="full-hd-col poster-slider">

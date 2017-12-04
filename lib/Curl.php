@@ -8,11 +8,11 @@
 class Curl
 {
 
-    public function sendRequest($url, $type = 'get', $params = [], $json = false)
+    public function sendRequest($url, $type = 'get', $params = array(), $json = false)
     {
         $ch = curl_init();
         if (false == $ch) {
-            throw new \HttpException('cannot create cURL handle');
+            return false;
         }
 
         curl_setopt($ch, CURLOPT_URL, $url);
@@ -28,10 +28,11 @@ class Curl
                 $params = json_encode($params);
 
                 curl_setopt($ch, CURLOPT_HTTPHEADER,
-                    [
-                    'Content-Type: application/json',
-                    'Content-Length: '.strlen($params)
-                ]);
+                    array(
+                        'Content-Type: application/json',
+                        'Content-Length: '.strlen($params)
+                    )
+                );
 
                 curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
             } else {

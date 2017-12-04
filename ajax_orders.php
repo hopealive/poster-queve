@@ -8,7 +8,9 @@ require_once('lib/Log.php');
 require_once('lib/Db.php');
 require_once('lib/Crud.php');
 require_once('lib/Poster.php');
-$orders = (new Poster())->getLastTransactions();
+
+$poster = new Poster();
+$orders = $poster->getLastTransactions();
 echo json_encode($orders);
 ?>
 

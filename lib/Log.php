@@ -2,7 +2,7 @@
 
 class Log
 {
-    private $path = '../tmp/logs/';
+    private $path = '/tmp/logs/';
 
     public function __construct()
     {

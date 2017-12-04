@@ -140,7 +140,7 @@ class DB
      */
     public function bind($para, $value)
     {
-        $this->parameters[sizeof($this->parameters)] = [":" . $para , $value];
+        $this->parameters[sizeof($this->parameters)] = array(":" . $para , $value);
     }
     /**
      *	@void

@@ -8,17 +8,20 @@
  */
 class Crud
 {
+    protected $db = null,
+        $log = null;
 
     public function currentDate()
     {
         date_default_timezone_set('Europe/Kiev');
-        $current_date = (new DateTime())->format('Y-m-d H:i:s');
-        return $current_date;
+        $dt = new DateTime();
+        return $dt->format('Y-m-d H:i:s');
     }
 
     public function getSettings()
     {
-        return (new Db())->query("select * from settings");
+        $this->db = new DB();
+        return $this->db->query("select * from settings");
     }
 
     public function createSettings()
@@ -28,7 +31,9 @@ class Crud
             $alias        = $_POST['alias'];
             $value        = $_POST['value'];
             $current_date = $this->currentDate();
-            $create       = (new Db())->query("INSERT INTO settings VALUES (null, :alias , :value, :current_date)",
+
+            $this->db = new DB();
+            $create = $this->db->query("INSERT INTO settings VALUES (null, :alias , :value, :current_date)",
                 array("alias" => "$alias", "value" => "$value", "current_date" => "$current_date"));
             echo "<script>alert('Запись добавлена');</script>";
             echo "<script>document.location.replace('?action=settings');</script>";
@@ -42,7 +47,10 @@ class Crud
             $alias        = $_POST['alias'];
             $value        = $_POST['value'];
             $current_date = $this->currentDate();
-            $update       = (new Db())->query("UPDATE settings SET alias = :alias, value = :value, created_time = :current_date WHERE id = :id",
+
+
+            $this->db = new DB();
+            $update       = $this->db->query("UPDATE settings SET alias = :alias, value = :value, created_time = :current_date WHERE id = :id",
                 array("alias" => "$alias", "value" => "$value", "current_date" => "$current_date",
                 "id" => "$id"));
             echo "<script>alert('Информация обновлена');</script>";
@@ -52,7 +60,8 @@ class Crud
 
     public function getSettingById($id)
     {
-        $setting = (new Db())->query("SELECT * FROM settings WHERE id = :id",
+        $this->db = new DB();
+        $setting = $this->db->query("SELECT * FROM settings WHERE id = :id",
             array("id" => (int) $id));
         if ($setting) return $setting[0];
         return false;
@@ -60,7 +69,8 @@ class Crud
 
     public function deleteSettings($id)
     {
-        $delete = (new Db())->query("DELETE FROM settings WHERE id = :id",
+        $this->db = new DB();
+        $delete = $this->db->query("DELETE FROM settings WHERE id = :id",
             array("id" => $id));
         echo "<script>alert('Запись удалена');</script>";
         echo "<script>document.location.replace('?action=settings');</script>";
@@ -68,7 +78,8 @@ class Crud
 
     public function getUsers()
     {
-        $users = (new Db())->query("select * from users");
+        $this->db = new DB();
+        $users = $this->db->query("select * from users");
         return $users;
     }
 
@@ -87,7 +98,8 @@ class Crud
         $email = $_POST['email'];
         $pass  = md5($_POST['password']);
 
-        $create = (new Db)->query("INSERT INTO users VALUES (NULL , :email, :password)",
+        $this->db = new DB();
+        $create = $this->db->query("INSERT INTO users VALUES (NULL , :email, :password)",
             array("email" => "$email", "password" => "$pass"));
         echo "<script>alert('Пользователь создан');</script>";
         echo "<script>document.location.replace('?action=users');</script>";
@@ -118,7 +130,8 @@ class Crud
             }
 
             if ($valid) {
-                $update = (new Db())->query("UPDATE users SET email = :email, password = :pass WHERE id = :id",
+                $this->db = new DB();
+                $update = $this->db->query("UPDATE users SET email = :email, password = :pass WHERE id = :id",
                     array("email" => "$email", "pass" => "$pass", "id" => "$id"));
                 echo "<script>alert('Информация обновлена');</script>";
                 echo "<script>document.location.replace('?action=users');</script>";
@@ -130,7 +143,9 @@ class Crud
     {
         if (isset($_POST['id'])) {
             $id     = $_POST['id'];
-            $delete = (new Db())->query("DELETE FROM users WHERE id = :id",
+            
+            $this->db = new DB();
+            $delete = $this->db->query("DELETE FROM users WHERE id = :id",
                 array("id" => $id));
             echo "<script>alert('Пользователь удален');</script>";
             echo "<script>document.location.replace('?action=users');</script>";
@@ -140,26 +155,26 @@ class Crud
     protected function isValidUser()
     {
         if (empty($_POST)) {
-            return ['status' => 'error', 'message' => 'Введены пустые данные'];
+            return array('status' => 'error', 'message' => 'Введены пустые данные');
         }
 
         if (empty($_POST['email'])) {
-            return ['status' => 'error', 'message' => 'Введен пустой email'];
+            return array('status' => 'error', 'message' => 'Введен пустой email');
         }
 
         if (!filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
-            return ['status' => 'error', 'message' => 'Имя пользователя не является email"ом'];
+            return array('status' => 'error', 'message' => 'Имя пользователя не является email"ом');
         }
 
         if (empty($_POST['password'])) {
-            return ['status' => 'error', 'message' => 'Не введен пароль'];
+            return array('status' => 'error', 'message' => 'Не введен пароль');
         }
 
         if (strlen($_POST['password']) < 8) {
-            return ['status' => 'error', 'message' => 'Пароль должен быть не менее 8 символов'];
+            return array('status' => 'error', 'message' => 'Пароль должен быть не менее 8 символов');
         }
 
-        return ['status' => 'ok'];
+        return array('status' => 'ok');
     }
     ###
     #Slider block
@@ -167,11 +182,14 @@ class Crud
 
     public function getSliderImages()
     {
-        return (new Db())->query("select id, src from slider ORDER BY position ASC");
+        $this->db = new DB();
+        return $this->db->query("select id, src from slider ORDER BY position ASC");
     }
 
     public function uploadSliderImage()
     {
+        $this->log = new Log();
+        
         $uploaddir = ROOT.DS.'images';
         foreach ($_FILES["multimedia-upload"]["error"] as $key => $error) {
             if ($error == UPLOAD_ERR_OK) {
@@ -179,11 +197,11 @@ class Crud
                 $name     = basename($_FILES["multimedia-upload"]["name"][$key]);
                 $src = $uploaddir.DS.$name;
                 if (!move_uploaded_file($tmp_name, $src)){
-                    (new Log)->write('move_uploaded_file');
+                    $this->log->write('move_uploaded_file');
                     return false;
                 }
                 if (!$this->saveSliderImage($name)){
-                    (new Log)->write('saveSliderImage');
+                    $this->log->write('saveSliderImage');
                     return false;
                 }
             } else {
@@ -195,12 +213,14 @@ class Crud
 
     protected function saveSliderImage($name)
     {
-        return (new Db)->query("INSERT INTO slider VALUES (NULL , :position, :src)",
+        $this->db = new DB();
+        return $this->db->query("INSERT INTO slider VALUES (NULL , :position, :src)",
             array("position" => 1, "src" => "$name"));
     }
 
     public function deleteSliderImage($id)
     {
-         return (new Db())->query("DELETE FROM slider WHERE id = :id", array("id" => $id));
+        $this->db = new DB();
+         return $this->db->query("DELETE FROM slider WHERE id = :id", array("id" => $id));
     }
 }

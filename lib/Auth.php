@@ -11,10 +11,12 @@ class Auth
 
     const ROOT_LOGIN = 'root@gmail.com';
     const ROOT_PASSWORD = 'fe01ce2a7fbac8fafaed7c982a04e229';
+    protected $db = null;
 
     protected function getLogins()
     {
-        $logins = (new DB())->query("select id, email From users WHERE 1");
+        $this->db = new DB();
+        $logins = $this->db->query("select id, email From users WHERE 1");
 
         $result = array(0 => self::ROOT_LOGIN);
         if(!empty($logins)){
@@ -27,9 +29,10 @@ class Auth
 
     protected function getPassById($id)
     {
-        $db = (new DB())->query("select password From users WHERE id = $id limit 1;");
-        if(!empty($db)){
-            return $db[0]['password'];
+        $this->db = new DB();
+        $passowrd = $this->db->query("select password From users WHERE id = $id limit 1;");
+        if(!empty($passowrd)){
+            return $passowrd[0]['password'];
         }
         return false;
     }

@@ -16,15 +16,15 @@ $initialPreviewConfig = array();
 
 $images = (new Crud())->getSliderImages();
 if ( !empty($images)){
-    $i = 0;
+    $i = 1;
     foreach ( $images as $image ){
         $initialPreview[] = '"/images/'.$image['src'].'"';
         $imageConfig = array(
-            "caption" => "Image # $i",
+            "caption" => "Image # ".$i,
             "size" => 0,
             "width" => "120px",
             "url" => "index.php?action=slider-delete",
-            "key" => $i,
+            "key" => $image['id'],
         );
         $initialPreviewConfig[] = json_encode($imageConfig);
         ++$i;

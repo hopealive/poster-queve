@@ -1,4 +1,24 @@
-<?php date_default_timezone_set('Europe/Kiev'); ?>
+<?php
+error_reporting(E_ALL);
+define('DS', DIRECTORY_SEPARATOR);
+define('ROOT', dirname(__FILE__));
+define('ADMIN_PATH', dirname(__FILE__).DS.'admin');
+define('VIEWS_PATH', ROOT.DS.'view');
+
+session_start();
+date_default_timezone_set('Europe/Kiev');
+
+require_once('lib/Log.php');
+require_once('lib/Db.php');
+require_once('lib/Auth.php');
+require_once('lib/Crud.php');
+require_once('lib/View.php');
+require_once('lib/Router.php');
+$crud = new Crud;
+
+?>
+
+
 <!DOCTYPE html>
 <html>
     <head>
@@ -24,17 +44,21 @@
                 </div>
             </div>
 
+            <?php $images = $crud->getSliderImages(); ?>
+
+            <?php if(!empty($images)){ ?>
             <div class="full-hd-col poster-slider">
                 <div id="sliderFrame">
                     <div id="slider">
                         <?php
-                        for ($i = 1; $i <= 12; $i++) {
-                            echo '<img src="images/photo/'.$i.'.jpg" />';
+                        foreach ( $images as $image ){
+                            echo '<img src="images/'.$image['src'].'" />';
                         }
                         ?>
                     </div>
                 </div>
             </div>
+            <?php } ?>
         </div>
 
         <script src="https://code.jquery.com/jquery-3.2.1.min.js" crossorigin="anonymous"></script>

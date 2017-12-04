@@ -167,7 +167,7 @@ class Crud
 
     public function getSliderImages()
     {
-        return (new Db())->query("select src from slider ORDER BY position ASC");
+        return (new Db())->query("select id, src from slider ORDER BY position ASC");
     }
 
     public function uploadSliderImage()
@@ -179,9 +179,11 @@ class Crud
                 $name     = basename($_FILES["multimedia-upload"]["name"][$key]);
                 $src = $uploaddir.DS.$name;
                 if (!move_uploaded_file($tmp_name, $src)){
+                    (new Log)->write('move_uploaded_file');
                     return false;
                 }
                 if (!$this->saveSliderImage($name)){
+                    (new Log)->write('saveSliderImage');
                     return false;
                 }
             } else {
@@ -199,10 +201,6 @@ class Crud
 
     public function deleteSliderImage($id)
     {
-         $delete = (new Db())->query("DELETE FROM slider WHERE id = :id",
-            array("id" => $id));
-        echo "<script>alert('Рисунок удален');</script>";
-        echo "<script>document.location.replace('?action=slider');</script>";
-       
+         return (new Db())->query("DELETE FROM slider WHERE id = :id", array("id" => $id));
     }
 }

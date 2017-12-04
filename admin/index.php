@@ -37,6 +37,9 @@ switch ($action) {
         $result = $Auth->authenticate($_POST);
         if ( $result ){
             Router::redirect('/admin?action=index');
+        } else {
+            $Auth->logout();
+            Router::redirect('/admin?action=login');
         }
         break;
     case "slider":
@@ -44,18 +47,22 @@ switch ($action) {
     case "slider-upload":
         $result = $crud->uploadSliderImage();
         if ( $result ){
-            Router::redirect('/admin?action=slider');
+            $flashMessage = "Загружено";
         } else {
-            echo "Ошибка загрузки";
+            $flashMessage = "Ошибка загрузки";
         }
+        echo "<script>alert('".$flashMessage."');</script>";
+        echo "<script>document.location.replace('?action=slider');</script>";
+        return; 
         break;
     case "slider-delete":
         $result = $crud->deleteSliderImage( (int) $_POST['key']);
+        $flashMessage = "Ошибка удаления";
         if ( $result ){
-            $result = ["status" => "ok", "message" => "Файл удален"];
-        } else {
-            $result = ["status" => "error", "message" => "Ошибка загрузки"];
+            $flashMessage = "Файл удален";
         }
+        echo "<script>alert('".$flashMessage."');</script>";
+        echo "<script>document.location.replace('?action=slider');</script>";
         return;
         break;
     case "settings":

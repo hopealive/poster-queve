@@ -6,35 +6,52 @@ var timeDelay = {
 
 function updateData() {
     var success = function (response) {
-        if (response.length > 0) {
-            $('.order-body').empty();
+        $('.error-block .error-message').html('');
+        $('.error-block').hide();
 
-            $(response).each(function (k, row) {
-                var vRow = '';
+        if (jQuery.isEmptyObject(response) || response.status != 'success') {
+            $('.order-body').empty().append(vRow);
 
-                if (row['status'] == 102) {
-                    vRow += '<div class="row status-complete">'
-                        + '<div class="col col-id">' + row['id'] + '</div>'
-                        + '<div class="col col-status">Готово</div>'
-                        + '</div>';
-                } else {
-                    vRow += '<div class="row status-in-progress">'
-                        + '<div class="col col-id">' + row['id'] + '</div>'
-                        + '<div class="col col-status">Очікування</div>'
-                        + '</div>';
-                }
+            var errorMeassge = "Сталась невідома помилка";
+            if ( response.message && response.message.length > 0 ){
+                errorMeassge = response.message;
+            }
+            $('.error-block .error-message').html(errorMeassge);
+            $('.error-block').show();
+            return;
+        }
 
-                $('.order-body').append(vRow);
-            });
-            window.setTimeout('updateData()', timeDelay.normal);
-        } else {
-            var vRow = '<div class="row status-in-progress">'
+        if (response.status == 'success') {
+            if (response.transactions.length > 0) {
+                $('.order-body').empty();
+
+                $(response.transactions).each(function (k, row) {
+                    var vRow = '';
+
+                    if (row['status'] == 102) {
+                        vRow += '<div class="row status-complete">'
+                                + '<div class="col col-id">' + row['id'] + '</div>'
+                                + '<div class="col col-status">Готово</div>'
+                                + '</div>';
+                    } else {
+                        vRow += '<div class="row status-in-progress">'
+                                + '<div class="col col-id">' + row['id'] + '</div>'
+                                + '<div class="col col-status">Очікування</div>'
+                                + '</div>';
+                    }
+
+                    $('.order-body').append(vRow);
+                });
+                window.setTimeout('updateData()', timeDelay.normal);
+            } else {
+                var vRow = '<div class="row status-in-progress">'
                         + '<div class="col col-id">&nbsp;</div>'
                         + '<div class="col col-status">Немає замовлень</div>'
                         + '</div>';
-                
-            $('.order-body').empty().append(vRow);
-            window.setTimeout('updateData()', timeDelay.empty);
+
+                $('.order-body').empty().append(vRow);
+                window.setTimeout('updateData()', timeDelay.empty);
+            }
         }
     };
     var error = function (error) {
@@ -52,5 +69,8 @@ function updateData() {
 
 $('document').ready(function () {
     updateData();
+    $('.error-block .error-block-close').on('click', function(){
+        $('.error-block').hide();
+    });
 });
 

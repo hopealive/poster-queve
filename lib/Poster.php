@@ -48,30 +48,43 @@ class Poster
     {
         $dateFrom = date("Ymd", time() - 60 * 60 * 24);
         $params = array('dateFrom' => $dateFrom);
-        $transactions = $this->getTransactions($params);
-        $transactions = $this->mapTransactions($transactions);
-        $result = $this->convertedByStatus($transactions);
-        $result = array_slice($result, 0, 8);
-        return $result;
+        $response = $this->getTransactions($params);
+        $transactions = $this->mapTransactions($response);
+        if ($transactions['status'] == 'error' || empty($transactions['transactions'])  ) return $transactions;
+
+        $result = $this->convertedByStatus($transactions['transactions']);
+        return [
+            'status' => $transactions['status'],
+            'message' => $transactions['message'],
+            'transactions' => array_slice($result, 0, 8),
+        ];
     }
 
     public function getPaginateTransactions($offset, $length)
     {
         $dateFrom = date("Ymd", time() - 60 * 60 * 24);
         $params = array('dateFrom' => $dateFrom);
-        $transactions = $this->getTransactions($params);
-        $transactions = $this->mapTransactions($transactions);
-        $result = $this->convertedByStatus($transactions);
-        $result = array_slice($result, $length*$offset, $length);
-        return $result;
+        $response = $this->getTransactions($params);
+        $transactions = $this->mapTransactions($response);
+        if ($transactions['status'] == 'error' || empty($transactions['transactions'])  ) return $transactions;
+
+        $result = $this->convertedByStatus($transactions['transactions']);
+        return [
+            'status' => $transactions['status'],
+            'message' => $transactions['message'],
+            'transactions' => array_slice($result, $length*$offset, $length),
+        ];
     }
 
     public function getTransactionTotal()
     {
         $dateFrom = date("Ymd", time() - 60 * 60 * 24);
         $params = array('dateFrom' => $dateFrom);
-        $transactions = $this->getTransactions($params);
-        return count($transactions['response']);
+        $response = $this->getTransactions($params);
+        if (!empty($response['response'])){
+            return count($response['response']);
+        }
+        return 0;
     }
 
     protected function getTransactions($params = array() )
@@ -87,26 +100,45 @@ class Poster
         );
 
         $url = $this->configs['url'].'dash.getTransactions?'.http_build_query($params);
-
-        $transactions = $this->transport->sendRequest($url);
-        if (empty($transactions['response'])) {
-            return array();
-        }
-        return $transactions;
+        return $this->transport->sendRequest($url);
     }
 
-    protected function mapTransactions($transactions)
+    protected function mapTransactions($response)
     {
+        if (empty($response)){
+            return [
+                'status' => 'error',
+                'message' => 'Немає відповіді від серверу',
+                'transactions' => array(),
+            ];
+        }
+
+        if (isset($response['error'])){
+            return [
+                'status' => 'error',
+                'message' => $response['error']['message'],
+                'transactions' => array(),
+            ];
+        }
+
+        $transactions = $response['response'];
+        if (empty($transactions)){
+            return [
+                'status' => 'success',
+                'message' => 'Немає замовлень',
+                'transactions' => array(),
+            ];
+        }
+
         $resultByStatus = array();
-        foreach ($transactions['response'] as $t) {
+        foreach ($transactions as $t) {
             $status = $t['status'];
 
             //filter by deleted
             if ($status == self::STATUS_POSTER_DELETED) continue;
 
             $status = self::STATUS_WAITING;
-            if (strpos($t['transaction_comment'], $this->configs['doneComment'])
-                > -1) {
+            if (strpos($t['transaction_comment'], $this->configs['doneComment']) > -1) {
                 $status = self::STATUS_DONE;
             }
 
@@ -118,20 +150,27 @@ class Poster
             );
 
             if ($t['date_close'] > 0) {
-                $row['last_date'] = date("Y-m-d H:i:s",
-                    (int) round($t['date_close'] / 1000));
+                $row['last_date'] = date("Y-m-d H:i:s", (int) round($t['date_close'] / 1000));
             } elseif ($t['date_start'] > 0) {
-                $row['last_date'] = date("Y-m-d H:i:s",
-                    (int) round($t['date_start'] / 1000));
+                $row['last_date'] = date("Y-m-d H:i:s",  (int) round($t['date_start'] / 1000));
             }
 
             $resultByStatus[$status][] = $row;
         }
 
         if (empty($resultByStatus)) {
-            return array();
+            return [
+                'status' => 'error',
+                'message' => 'Error while grouping transactions',
+                'transactions' => array(),
+            ];
         }
-        return $resultByStatus;
+
+        return [
+            'status' => 'success',
+            'message' => 'Success',
+            'transactions' => $resultByStatus,
+        ];
     }
 
     protected function convertedByStatus($transactions)

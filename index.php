@@ -41,7 +41,6 @@ $images = $crud->getSliderImages();
                     </div>
                 </div>
             </div>
-
             <?php if(!empty($images)){ ?>
             <div class="full-hd-col poster-slider">
                 <div id="sliderFrame">
@@ -55,6 +54,11 @@ $images = $crud->getSliderImages();
                 </div>
             </div>
             <?php } ?>
+        </div>
+
+        <div class="error-block">
+            <a href="javascript:void(0)" class="error-block-close">закрити</a>
+            <div class="error-message">&nbsp;</div>
         </div>
 
         <script src="https://code.jquery.com/jquery-3.2.1.min.js" crossorigin="anonymous"></script>

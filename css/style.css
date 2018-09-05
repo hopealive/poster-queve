@@ -5,7 +5,8 @@
 
 /* For generic page styles.  */
 
-*, html, body { background-color: #E6E6E6; margin: 0; padding: 0; font-size:1px; overflow: hidden}
+*, html, body { margin: 0; padding: 0; font-size:12px; overflow: hidden}
+html, body { background-color: #E6E6E6;}
 
 .wrapper { display: block; width: 1920px; min-height: 1080px; overflow:hidden; }
 .full-hd-col { display: block; width: 960px; min-height: 1080px; float: left; }
@@ -27,3 +28,8 @@
 #sliderFrame { width: 960px; }
 #slider, #slider .sliderInner { background: #E6E6E6;  width: 960px;  height:1070px; }
 div.navBulletsWrapper {display:none;}
+
+.error-block{display:none;overflow:auto;position:fixed;bottom:0;right:0;width:200px;min-height:50px;border:1px solid red;background-color:rgba(255, 0, 0, 0.6);color:#fff;padding:10px;}
+.error-block .error-block-close { overflow: auto; display: block; float: right; margin-bottom: 10px; font-size: 12px; font-weight: bold; color: #fff; text-decoration: none; }
+.error-block .error-block-close:hover { text-decoration: underline;}
+.error-block .error-message {clear:both;display: block;font-size: 14px;text-transform: uppercase;}

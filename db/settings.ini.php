@@ -17,5 +17,5 @@ tmp_dir = /../tmp/logs/
 
 [DEMO]
 demo_url = https://demo.joinposter.com/api/
-demo_token = 4164553abf6a031302898da7800b59fb
+demo_token = 3912823774a36366238bf61e4ab9a80c
 demo_doneComment = +

@@ -61,7 +61,7 @@ class Poster
             'status' => $transactions['status'],
             'message' => $transactions['message'],
             'transactions' => array_slice($converted, 0, 8),
-            'changedToComplete' => $transactions['changedToComplete'],
+            'status_changed_to_done' => $transactions['changedToDone'],
         ];
     }
 
@@ -121,7 +121,7 @@ class Poster
                 'status' => 'error',
                 'message' => 'Немає відповіді від серверу',
                 'transactions' => array(),
-                'changedToComplete' => $changedToComplete,
+                'changedToDone' => $changedToDone,
             ];
         }
 
@@ -130,7 +130,7 @@ class Poster
                 'status' => 'error',
                 'message' => $response['error']['message'],
                 'transactions' => array(),
-                'changedToComplete' => $changedToComplete,
+                'changedToDone' => $changedToDone,
             ];
         }
 
@@ -140,19 +140,15 @@ class Poster
                 'status' => 'success',
                 'message' => 'Немає замовлень',
                 'transactions' => array(),
-                'changedToComplete' => $changedToComplete,
+                'changedToDone' => $changedToDone,
             ];
         }
 
         (new OrderHistory())->moveFromOrders();
-        $changedToComplete = false;
+        $changedToDone = false;
 
         $nOrders = array();
         foreach ($transactions as $k => $t) {
-//todo: remove, for test
-// if( !($t['transaction_id']  % 5)) $t['status'] = self::STATUS_POSTER_OPENED;//every 5th - opened
-// if( !($t['transaction_id']  % 10)) $t['transaction_comment'] = "+";//every 10th - complete
-
             $order = array(
                 'origin_id' => $t['transaction_id'],
                 'view_id' => null,
@@ -212,7 +208,7 @@ class Poster
                 if ( $eOrder['status'] != $existOrders[$originId]['status']  ){
                     $needUpdate = true;
                     if ( $existOrders[$originId]['status'] == self::STATUS_DONE){
-                        $changedToComplete = true;
+                        $changedToDone = true;
                     }
                 }
 
@@ -241,7 +237,7 @@ class Poster
                 'status' => 'error',
                 'message' => 'Error while grouping transactions',
                 'transactions' => array(),
-                'changedToComplete' => $changedToComplete,
+                'changedToDone' => $changedToDone,
             ];
         }
 
@@ -249,7 +245,7 @@ class Poster
             'status' => 'success',
             'message' => 'Success',
             'transactions' => $resultByStatus,
-            'changedToComplete' => $changedToComplete,
+            'changedToDone' => $changedToDone,
         ];
     }
 
@@ -257,6 +253,15 @@ class Poster
     {
         if ($t['status'] == self::STATUS_POSTER_DELETED) return self::STATUS_DELETED;
         if ($t['status'] == self::STATUS_POSTER_CLOSE) return self::STATUS_CLOSE;
+
+        //todo: remove, for test
+//        if ($t['status'] == self::STATUS_POSTER_CLOSE) {
+//            if( !($t['transaction_id']  % 5)) return self::STATUS_WAITING;//every 3rd - opened
+//            if( !($t['transaction_id']  % 6)) return self::STATUS_DONE;//every 10th - complete
+//            return self::STATUS_CLOSE;
+//        }
+       //todo: remove, for test
+
         if ($t['status'] == self::STATUS_POSTER_FISCAL) return self::STATUS_FISCAL;
 
         if ($t['status'] == self::STATUS_POSTER_OPENED) {

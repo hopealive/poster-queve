@@ -53,7 +53,7 @@ function updateData() {
                 window.setTimeout('updateData()', timeDelay.empty);
             }
 
-            if ( response.status_changed_complete ){
+            if ( response.status_changed_to_done ){
                 var audio = new Audio('/sounds/notification.mp3');
                 audio.play();
             }

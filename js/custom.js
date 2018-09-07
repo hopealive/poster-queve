@@ -28,14 +28,14 @@ function updateData() {
                 $(response.transactions).each(function (k, row) {
                     var vRow = '';
 
-                    if (row['status'] == 102) {
+                    if (row['status'] == 'done') {
                         vRow += '<div class="row status-complete">'
-                                + '<div class="col col-id">' + row['id'] + '</div>'
+                                + '<div class="col col-id">' + row['view_id'] + '</div>'
                                 + '<div class="col col-status">Готово</div>'
                                 + '</div>';
                     } else {
                         vRow += '<div class="row status-in-progress">'
-                                + '<div class="col col-id">' + row['id'] + '</div>'
+                                + '<div class="col col-id">' + row['view_id'] + '</div>'
                                 + '<div class="col col-status">Очікування</div>'
                                 + '</div>';
                     }
@@ -51,6 +51,11 @@ function updateData() {
 
                 $('.order-body').empty().append(vRow);
                 window.setTimeout('updateData()', timeDelay.empty);
+            }
+
+            if ( response.status_changed_complete ){
+                var audio = new Audio('/sounds/notification.mp3');
+                audio.play();
             }
         }
     };

@@ -4,6 +4,7 @@
  *
  * @author		Author: Vivek Wicky Aswal. (https://twitter.com/#!/VivekWickyAswal)
  * @git 		https://github.com/wickyaswal/PHP-MySQL-PDO-Database-Class
+ *                      https://github.com/wickyaswal/indieteq-php-my-sql-pdo-database-class
  * @version      0.2ab
  *
  */
@@ -60,7 +61,7 @@ class DB
                         ));
                     break;
                 case 'sqlite';
-                    $dsn = 'sqlite:'.$this->settings["dbfilename"];
+                    $dsn = 'sqlite:'.ROOT.DS.$this->settings["dbfilename"];
                     $this->pdo = new PDO($dsn);
                     break;
                 default:

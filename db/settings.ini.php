@@ -10,10 +10,11 @@ dbpassword = 637vfuGeA
 dbname = prmusic1_poster
 
 [SQLITE]
-dbfilename = /../db/komora.sqlite
+dbfilename = db/komora.sqlite
 
 [LOG]
-tmp_dir = /../tmp/logs/
+;;;;;;FOLDER FROM PROJECT ROOT
+tmp_dir = tmp/logs/
 
 [DEMO]
 demo_url = https://demo.joinposter.com/api/

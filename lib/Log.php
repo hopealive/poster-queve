@@ -2,7 +2,7 @@
 
 class Log
 {
-    private $path = '/tmp/logs/';
+    private $path = '/tmp/logs/';//default if not in settings
 
     public function __construct()
     {
@@ -24,10 +24,17 @@ class Log
      */
     public function write($message)
     {
+        $this->settings = parse_ini_file(ROOT.DS."db/settings.ini.php");
+        $tmp_dir = ROOT.DS.$this->settings['tmp_dir'];
+        if (!is_dir($tmp_dir)) {
+            $tmp_dir = $this->path;
+        }
         $date = new DateTime();
-        $log  = $this->path.$date->format('Y-m-d').".txt";
+        $log  = $tmp_dir.$date->format('Y-m-d').".txt";
 
-        if (is_dir($this->path)) {
+
+
+        if (is_dir($tmp_dir)) {
             if (!file_exists($log)) {
                 $fh         = fopen($log, 'a+') or die("Fatal Error !");
                 $logcontent = "Time : ".$date->format('H:i:s')."\r\n".$message."\r\n";
@@ -37,7 +44,7 @@ class Log
                 $this->edit($log, $date, $message);
             }
         } else {
-            if (mkdir($this->path, 0777) === true) {
+            if (mkdir($tmp_dir, 0777) === true) {
                 $this->write($message);
             }
         }

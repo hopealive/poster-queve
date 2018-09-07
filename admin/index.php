@@ -38,9 +38,9 @@ switch ($action) {
     case "slider-upload":
         $result = $crud->uploadSliderImage();
         if ( $result ){
-            $flashMessage = "Загружено";
+            $flashMessage = "Завантажено";
         } else {
-            $flashMessage = "Ошибка загрузки";
+            $flashMessage = "Помилка завантаження";
         }
         echo "<script>alert('".$flashMessage."');</script>";
         echo "<script>document.location.replace('?action=slider');</script>";
@@ -48,9 +48,9 @@ switch ($action) {
         break;
     case "slider-delete":
         $result = $crud->deleteSliderImage( (int) $_POST['key']);
-        $flashMessage = "Ошибка удаления";
+        $flashMessage = "Помилка видалення";
         if ( $result ){
-            $flashMessage = "Файл удален";
+            $flashMessage = "Файл видалено";
         }
         echo "<script>alert('".$flashMessage."');</script>";
         echo "<script>document.location.replace('?action=slider');</script>";
@@ -58,11 +58,11 @@ switch ($action) {
         break;
     case "settings":
         if(isset($_POST['save'])) {
-            $result = $crud->createSettings();
+            $result = (new Settings)->create();
         } elseif (isset($_POST['update'])){
-            $result = $crud->updateSettings();
+            $result = (new Settings)->update();
         } elseif (isset($_GET['del'])){
-            $result = $crud->deleteSettings( (int)$_GET['id'] );
+            $result = (new Settings)->delete( (int)$_GET['id'] );
         }
         break;
     case "profile":
@@ -71,17 +71,17 @@ switch ($action) {
         break;
     case "create":
         if(!empty($_POST)){
-            $result = $crud->createUser();
+            $result = (new Users())->create();
         }
         break;
     case "update":
         if(isset($_GET['id'])){
-            $result = $crud->editUser();
+            $result = (new Users())->edit();
         }
         break;
     case "delete":
         if(isset($_POST['id'])){
-            $result = $crud->deleteUser();
+            $result = (new Users())->delete();
         }
         break;
     case "logout":

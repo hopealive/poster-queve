@@ -11,16 +11,21 @@ class Poster
         $configs;
     
     public $transactionStatuses = array(
-        1 => "открыт",
-        2 => "закрыт",
-        3 => "удален",
+        1 => "відкритий",
+        2 => "закрий",
+        3 => "видалений",
     );
 
     const STATUS_POSTER_OPENED  = 1;
     const STATUS_POSTER_CLOSE   = 2;
     const STATUS_POSTER_DELETED = 3;
-    const STATUS_WAITING        = 101;
-    const STATUS_DONE           = 102;
+    const STATUS_POSTER_FISCAL = 4;
+    const STATUS_WAITING        = 'waiting';
+    const STATUS_DONE           = 'done';
+    const STATUS_CLOSE = 'closed';
+    const STATUS_DELETED = 'deleted';
+    const STATUS_FISCAL = 'fiscal';
+
 
     public function __construct()
     {
@@ -35,8 +40,7 @@ class Poster
         );
 
         //write from db
-        $crud    = new Crud();
-        $configs = $crud->getSettings();
+        $configs = (new Settings)->getSettings();
         if (!empty($configs)) {
             foreach ($configs as $config) {
                 $this->configs[$config['alias']] = $config['value'];
@@ -49,42 +53,49 @@ class Poster
         $dateFrom = date("Ymd", time() - 60 * 60 * 24);
         $params = array('dateFrom' => $dateFrom);
         $response = $this->getTransactions($params);
-        $transactions = $this->mapTransactions($response);
+        $transactions = $this->processTransactions($response);
         if ($transactions['status'] == 'error' || empty($transactions['transactions'])  ) return $transactions;
 
-        $result = $this->convertedByStatus($transactions['transactions']);
+        $converted = $this->convertedByStatus($transactions['transactions']);
         return [
             'status' => $transactions['status'],
             'message' => $transactions['message'],
-            'transactions' => array_slice($result, 0, 8),
+            'transactions' => array_slice($converted, 0, 8),
+            'changedToComplete' => $transactions['changedToComplete'],
         ];
     }
 
     public function getPaginateTransactions($offset, $length)
     {
-        $dateFrom = date("Ymd", time() - 60 * 60 * 24);
-        $params = array('dateFrom' => $dateFrom);
-        $response = $this->getTransactions($params);
-        $transactions = $this->mapTransactions($response);
-        if ($transactions['status'] == 'error' || empty($transactions['transactions'])  ) return $transactions;
+        $params = array();
+        if ( $length > 0 ) $params['limit'] = $length;
+        if ( $offset > 0 ) $params['offset'] = $length*$offset;
 
-        $result = $this->convertedByStatus($transactions['transactions']);
+
+        $orders = (new Orders())->getAll($params);
+        if (empty($orders)){
+            return [
+                'status' => "error",
+                'message' => 'Немає замовлень',
+                'transactions' => array(),
+            ];
+        }
+
+        foreach ( $orders as $order ){
+            $resultByStatus[$order['status']][] = $order;
+        }
+        $result = $this->convertedByStatus($resultByStatus);
+
         return [
-            'status' => $transactions['status'],
-            'message' => $transactions['message'],
-            'transactions' => array_slice($result, $length*$offset, $length),
+            'status' => 'success',
+            'message' => 'Success',
+            'transactions' => $result,
         ];
     }
 
     public function getTransactionTotal()
     {
-        $dateFrom = date("Ymd", time() - 60 * 60 * 24);
-        $params = array('dateFrom' => $dateFrom);
-        $response = $this->getTransactions($params);
-        if (!empty($response['response'])){
-            return count($response['response']);
-        }
-        return 0;
+        return (new Orders())->countAll();
     }
 
     protected function getTransactions($params = array() )
@@ -103,13 +114,14 @@ class Poster
         return $this->transport->sendRequest($url);
     }
 
-    protected function mapTransactions($response)
+    protected function processTransactions($response)
     {
         if (empty($response)){
             return [
                 'status' => 'error',
                 'message' => 'Немає відповіді від серверу',
                 'transactions' => array(),
+                'changedToComplete' => $changedToComplete,
             ];
         }
 
@@ -118,6 +130,7 @@ class Poster
                 'status' => 'error',
                 'message' => $response['error']['message'],
                 'transactions' => array(),
+                'changedToComplete' => $changedToComplete,
             ];
         }
 
@@ -127,35 +140,100 @@ class Poster
                 'status' => 'success',
                 'message' => 'Немає замовлень',
                 'transactions' => array(),
+                'changedToComplete' => $changedToComplete,
             ];
         }
 
-        $resultByStatus = array();
-        foreach ($transactions as $t) {
-            $status = $t['status'];
+        (new OrderHistory())->moveFromOrders();
+        $changedToComplete = false;
 
-            //filter by deleted
-            if ($status == self::STATUS_POSTER_DELETED) continue;
+        $nOrders = array();
+        foreach ($transactions as $k => $t) {
+//todo: remove, for test
+// if( !($t['transaction_id']  % 5)) $t['status'] = self::STATUS_POSTER_OPENED;//every 5th - opened
+// if( !($t['transaction_id']  % 10)) $t['transaction_comment'] = "+";//every 10th - complete
 
-            $status = self::STATUS_WAITING;
-            if (strpos($t['transaction_comment'], $this->configs['doneComment']) > -1) {
-                $status = self::STATUS_DONE;
-            }
-
-            $row = array(
-                'id' => $t['transaction_id'],
-                'status' => $status,
+            $order = array(
+                'origin_id' => $t['transaction_id'],
+                'view_id' => null,
+                'status' => $this->getInnerStatus($t),
                 'origin_status' => $t['status'],
-                'last_date' => date("Y-m-d H:i:s"),
+                'last_date' => $this->getLastDate($t),
             );
 
-            if ($t['date_close'] > 0) {
-                $row['last_date'] = date("Y-m-d H:i:s", (int) round($t['date_close'] / 1000));
-            } elseif ($t['date_start'] > 0) {
-                $row['last_date'] = date("Y-m-d H:i:s",  (int) round($t['date_start'] / 1000));
-            }
+            if ( empty($order['last_date']) OR $order['last_date'] < date("Y-m-d 00:00:00") ) continue;
 
-            $resultByStatus[$status][] = $row;
+            $nOrders[$t['transaction_id']] = $order;
+        }
+
+        $exists = array();
+        $existOrders = array();
+        if (!empty($nOrders)){
+            $exists = (new Orders())->getListByOriginIds(array_column($nOrders, 'origin_id'));
+            if (!empty($exists)){
+                foreach ($exists as $existId) {
+                    //for check to update
+                    $existOrders[$existId] = $nOrders[$existId];
+
+                    //remove from working in future
+                    unset($nOrders[$existId]);
+                }
+            }
+        }
+
+        //sort
+        if (!empty($nOrders)){
+            uksort($nOrders, function($a, $b) {
+                return ($a['last_date'] < $b['last_date']) ? -1 : 1;
+            });
+        }
+
+        $i = $maxId = (new Orders())->getMaxId();
+        foreach ( $nOrders as $originId => $order ){
+            ++$i;
+            $nOrders[$originId]['view_id'] = $i;
+        }
+
+        //create new orders
+        (new Orders())->createList($nOrders);
+
+        $viewIds = (new Orders())->getViewIdList();
+
+        if (!empty($existOrders)){
+            $params['filters'] = ['origin_id' => 'IN ( '.implode(",", array_keys($existOrders) ).' )'];
+            $existInDbOrders = (new Orders())->getAll($params);
+            foreach ( $existInDbOrders as $eOrder ){
+                $needUpdate = false;
+                $originId = $eOrder['origin_id'] ;
+                if ( $eOrder['origin_status'] != $existOrders[$originId]['origin_status'] ){
+                    $needUpdate = true;
+                }
+
+                if ( $eOrder['status'] != $existOrders[$originId]['status']  ){
+                    $needUpdate = true;
+                    if ( $existOrders[$originId]['status'] == self::STATUS_DONE){
+                        $changedToComplete = true;
+                    }
+                }
+
+                //update
+                if ( $needUpdate ){
+                    (new Orders())->updateStatus($existOrders[$originId]);
+                }
+            }
+        }
+
+
+        $resultByStatus = array();
+        foreach ($transactions as $t) {
+            $status = $this->getInnerStatus($t);
+            $resultByStatus[$status][] = array(
+                'id' => $t['transaction_id'],
+                'view_id' => (isset($viewIds[$t['transaction_id']]) ? $viewIds[$t['transaction_id']] : "-"),
+                'status' => $status,
+                'origin_status' => $t['status'],
+                'last_date' => $this->getLastDate($t),
+            );
         }
 
         if (empty($resultByStatus)) {
@@ -163,6 +241,7 @@ class Poster
                 'status' => 'error',
                 'message' => 'Error while grouping transactions',
                 'transactions' => array(),
+                'changedToComplete' => $changedToComplete,
             ];
         }
 
@@ -170,7 +249,33 @@ class Poster
             'status' => 'success',
             'message' => 'Success',
             'transactions' => $resultByStatus,
+            'changedToComplete' => $changedToComplete,
         ];
+    }
+
+    protected function getInnerStatus($t)
+    {
+        if ($t['status'] == self::STATUS_POSTER_DELETED) return self::STATUS_DELETED;
+        if ($t['status'] == self::STATUS_POSTER_CLOSE) return self::STATUS_CLOSE;
+        if ($t['status'] == self::STATUS_POSTER_FISCAL) return self::STATUS_FISCAL;
+
+        if ($t['status'] == self::STATUS_POSTER_OPENED) {
+            $status = self::STATUS_WAITING;
+            if (strpos($t['transaction_comment'], $this->configs['doneComment']) > -1) {
+                $status = self::STATUS_DONE;
+            }
+        }
+        return $status;
+    }
+
+    protected function getLastDate($t)
+    {
+        if ($t['date_close'] > 0) {
+            return date("Y-m-d H:i:s", (int) round($t['date_close'] / 1000));
+        } elseif ($t['date_start'] > 0) {
+            return date("Y-m-d H:i:s", (int) round($t['date_start'] / 1000));
+        }
+        return false;
     }
 
     protected function convertedByStatus($transactions)
@@ -198,13 +303,13 @@ class Poster
     {
         return array(
             'general' => array(
-                self::STATUS_WAITING => "Ожидание",
-                self::STATUS_DONE => "Выполнен",
+                self::STATUS_WAITING => "Очікування",
+                self::STATUS_DONE => "Виконаний",
             ),
             'poster' => array(
-                self::STATUS_POSTER_OPENED => "Открыт",
-                self::STATUS_POSTER_CLOSE => "Закрыт",
-                self::STATUS_POSTER_DELETED => "Удален",
+                self::STATUS_POSTER_OPENED => "Відкритий",
+                self::STATUS_POSTER_CLOSE => "Закритий",
+                self::STATUS_POSTER_DELETED => "Видалений",
 
             ),
         );

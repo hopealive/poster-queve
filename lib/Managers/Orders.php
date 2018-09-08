@@ -13,27 +13,34 @@ class Orders extends Crud
         if (empty($data)) return false;
 
         foreach ($data as $dRow) {
+            $comment = (isset($dRow['comment']) ?  "'".$dRow['comment']."'," : "null,");
             $iRows[] = "( "
                 .$dRow['origin_id'].", "
                 .$dRow['view_id'].", "
                 ."'".$dRow['status']."',"
                 ."'".$dRow['origin_status']."',"
+                .$comment
                 ."'".$dRow['last_date']."'"
                 .")";
         }
 
-        $query = "INSERT INTO orders (origin_id, view_id, status, origin_status, last_date) VALUES ".implode(",", $iRows);
+        $query = "INSERT INTO orders (origin_id, view_id, status, origin_status, comment, last_date) VALUES ".implode(",", $iRows);
         return $this->db->query($query);
     }
 
 
     public function updateStatus($data)
     {
-        $query  = "UPDATE orders SET status = :status, origin_status = :origin_status, last_date = :last_date, last_update_date = NOW() WHERE origin_id = :origin_id";
-        $update = $this->db->query($query,
+        $query  = "UPDATE orders SET status = :status, "
+            . "origin_status = :origin_status, "
+            . "comment = :comment, "
+            . "last_date = :last_date, "
+            . "last_update_date = NOW() WHERE origin_id = :origin_id";
+        return $this->db->query($query,
             array(
             "status" => $data['status'],
             "origin_status" => $data['origin_status'],
+            "comment" => $data['comment'],
             "last_date" => $data['last_date'],
             "origin_id" => $data['origin_id'],
         ));

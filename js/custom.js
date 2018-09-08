@@ -28,12 +28,12 @@ function updateData() {
                 $(response.transactions).each(function (k, row) {
                     var vRow = '';
 
-                    if (row['status'] == 'done') {
+                    if (row['status'] == 'done' || row['status'] == 'closed_done' ) {
                         vRow += '<div class="row status-complete">'
                                 + '<div class="col col-id">' + row['view_id'] + '</div>'
                                 + '<div class="col col-status">Готово</div>'
                                 + '</div>';
-                    } else {
+                    } else if (row['status'] == 'waiting') {
                         vRow += '<div class="row status-in-progress">'
                                 + '<div class="col col-id">' + row['view_id'] + '</div>'
                                 + '<div class="col col-status">Очікування</div>'

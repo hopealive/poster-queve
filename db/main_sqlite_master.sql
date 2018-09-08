@@ -65,6 +65,7 @@ CREATE TABLE orders (
   view_id int(11) NOT NULL,
   status varchar(32) NOT NULL,
   origin_status int(11) NOT NULL,
+  comment text NULL,
   last_date datetime NOT NULL,
   last_update_date datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
 PRIMARY KEY ( id )
@@ -77,6 +78,7 @@ CREATE TABLE order_history (
   view_id int(11) NOT NULL,
   status varchar(32) NOT NULL,
   origin_status int(11) NOT NULL,
+  comment text NULL,
   last_date datetime NOT NULL,
   last_update_date datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
 PRIMARY KEY ( id )

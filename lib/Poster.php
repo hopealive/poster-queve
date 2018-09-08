@@ -23,11 +23,17 @@ class Poster
     const STATUS_WAITING        = 'waiting';
     const STATUS_DONE           = 'done';
     const STATUS_CLOSE = 'closed';
+    const STATUS_CLOSE_DONE = 'closed_done';
     const STATUS_DELETED = 'deleted';
     const STATUS_FISCAL = 'fiscal';
 
+    const SPOT_ID = 1;
+    const SPOT_TABLE_ID = 1;
+
     const COUNT_ORDERS_TO_VIEW = 8;
-    const HIDE_AFTER_MINUTES = 30;
+    const HIDE_AFTER_MINUTES = 1;
+
+    const SUCCESS_DONE_MESSAGE = "Замовлення #";
 
 
     public function __construct()
@@ -64,14 +70,13 @@ class Poster
         $ordersByStatus = array();
         foreach ( $orders as $order ){
             $compareTime = date('Y-m-d H:i:s', strtotime('-' . self::HIDE_AFTER_MINUTES . ' minutes') );
-            if ( 
-                $order['status'] == self::STATUS_DONE &&
-                $order['last_update_date'] < $compareTime){
+            if ( in_array($order['status'], [self::STATUS_DONE, self::STATUS_CLOSE_DONE])
+                && $order['last_update_date'] < $compareTime){
                     continue;
             }
             $ordersByStatus[$order['status']][] = $order;
         }
-        $converted = $this->convertedByStatus($ordersByStatus);
+        $converted = $this->convertedByStatus($ordersByStatus, false);
         return [
             'status' => $process['status'],
             'message' => $process['message'],
@@ -100,7 +105,7 @@ class Poster
         foreach ( $orders as $order ){
             $resultByStatus[$order['status']][] = $order;
         }
-        $result = $this->convertedByStatus($resultByStatus);
+        $result = $this->convertedByStatus($resultByStatus, true);
 
         return [
             'status' => 'success',
@@ -130,8 +135,54 @@ class Poster
         return $this->transport->sendRequest($url);
     }
 
+    protected function updatePosterComment($data)
+    {
+        $getParams = array(
+            'token' => $this->configs['token'],
+        );
+        $postParams = array(
+            'comment' => $data['comment'],
+            'spot_id' => self::SPOT_ID,//todo: think about this hardcode
+            'spot_tablet_id' => self::SPOT_TABLE_ID,//todo: think about this hardcode
+            'transaction_id' => $data['origin_id'],
+        );
+        $url = $this->configs['url'].'transactions.changeComment?'.http_build_query($getParams);
+        $response = $this->transport->sendRequest($url, 'post', $postParams, false);
+        if ( isset($response['response'])){
+            if ( isset($response['response']['err_code']) ){
+                if ( $response['response']['err_code'] == 0 ){
+                    return array(
+                        'status' => 'success',
+                        'message' => '',
+                    );
+                } else {
+                    return array(
+                        'status' => 'error',
+                        'message' => 'Код помилки: '.$response['response']['err_code'],
+                    );
+                }
+            } elseif (isset($response['error']) && isset($response['message']) ) {
+                return array(
+                    'status' => 'error',
+                    'message' => $response['message'],
+                );
+            }
+        } else {
+            return array(
+                'status' => 'error',
+                'message' => 'Немає відповіді від серверу під час оновлення коментаря',
+            );
+        }
+
+        return array(
+            'status' => 'error',
+            'message' => 'Невідома помилка під час оновлення коментаря',
+       );
+    }
+
     protected function processTransactions($response)
     {
+        $changedToDone = false;
         if (empty($response)){
             return [
                 'status' => 'error',
@@ -157,8 +208,23 @@ class Poster
             ];
         }
 
+//todo: remove, need for tests
+//        $params = array(
+//            'token' => $this->configs['token'],
+//            'transaction_id' => 394418,
+//            'include_products' => false,
+//        );
+//        $url = $this->configs['url'].'dash.getTransaction?'.http_build_query($params);
+//        $testTransaction = $this->transport->sendRequest($url);
+//        if ( isset($testTransaction['response'][0]) ){
+//            $testTransaction = $testTransaction['response'][0];
+//            $testTransaction['date_start'] = 1536422404551;
+////            $testTransaction['transaction_comment'] .= "+";//todo: uncomment to ding dong
+//            $transactions[] = $testTransaction;
+//        }
+//todo: remove, need for tests
+
         (new OrderHistory())->moveFromOrders();
-        $changedToDone = false;
 
         $nOrders = array();
         foreach ($transactions as $k => $t) {
@@ -167,6 +233,7 @@ class Poster
                 'view_id' => null,
                 'status' => $this->getInnerStatus($t),
                 'origin_status' => $t['status'],
+                'comment' => (isset ($t['transaction_comment']) ? $t['transaction_comment'] : null ),
                 'last_date' => $this->getLastDate($t),
             );
 
@@ -198,14 +265,46 @@ class Poster
         }
 
         $i = $maxId = (new Orders())->getMaxId();
+
         foreach ( $nOrders as $originId => $order ){
             ++$i;
             $nOrders[$originId]['view_id'] = $i;
+
+            //update comment in POSTER
+            if ( $order['status'] != self::STATUS_WAITING ) {
+                continue;
+            }
+            if (strpos($order['comment'], self::SUCCESS_DONE_MESSAGE) > -1) {
+                continue;
+            }
+
+            $nOrders[$originId]['comment'] = self::SUCCESS_DONE_MESSAGE."$i \n".$nOrders[$originId]['comment'];
+            $updateCommentResponse = $this->updatePosterComment($nOrders[$originId]);
+            if ($updateCommentResponse['status'] == 'error'){
+                return [
+                    'status' => 'error',
+                    'message' => $updateCommentResponse['message'],
+                    'changedToDone' => $changedToDone,
+                ];
+            }
         }
 
-        //create new orders
-        (new Orders())->createList($nOrders);
+        $db = new DB();
+        $db->beginTransaction();
 
+        //create new orders
+        if (!empty($nOrders)) {
+            if (!(new Orders())->createList($nOrders)) {
+                $db->rollBack();
+                return [
+                    'status' => 'error',
+                    'message' => 'Помилка під час запису нових чеків',
+                    'changedToDone' => $changedToDone,
+                ];
+            }
+        }
+
+        //update orders
         if (!empty($existOrders)){
             $params['filters'] = ['origin_id' => 'IN ( '.implode(",", array_keys($existOrders) ).' )'];
             $existInDbOrders = (new Orders())->getAll($params);
@@ -218,17 +317,29 @@ class Poster
 
                 if ( $eOrder['status'] != $existOrders[$originId]['status']  ){
                     $needUpdate = true;
-                    if ( $existOrders[$originId]['status'] == self::STATUS_DONE){
+                    if ( in_array($existOrders[$originId]['status'], [ self::STATUS_DONE, self::STATUS_CLOSE_DONE ]) ){
                         $changedToDone = true;
                     }
                 }
 
+                if ( $eOrder['comment'] != $existOrders[$originId]['comment']  ){
+                    $needUpdate = true;
+                }
+
                 //update
                 if ( $needUpdate ){
-                    (new Orders())->updateStatus($existOrders[$originId]);
+                    if (!(new Orders())->updateStatus($existOrders[$originId])){
+                        $db->rollBack();
+                        return [
+                            'status' => 'error',
+                            'message' => 'Помилка під час оновлення чеків',
+                            'changedToDone' => $changedToDone,
+                        ];
+                    }
                 }
             }
         }
+        $db->executeTransaction();
 
         return [
             'status' => 'success',
@@ -240,22 +351,23 @@ class Poster
 
     protected function getInnerStatus($t)
     {
+        //todo: remove, need for tests
+//        if ($t['status'] == self::STATUS_POSTER_CLOSE && !($t['transaction_id']  % 6) ) return self::STATUS_DONE;//every 10th - complete
+        //todo: remove, need for tests
+
         if ($t['status'] == self::STATUS_POSTER_DELETED) return self::STATUS_DELETED;
-
-        //todo: remove, for test
-//        if ($t['status'] == self::STATUS_POSTER_CLOSE) {
-//            if( !($t['transaction_id']  % 5)) return self::STATUS_WAITING;//every 3rd - opened
-//            if( !($t['transaction_id']  % 6)) return self::STATUS_DONE;//every 10th - complete
-//            return self::STATUS_CLOSE;
-//        }
-       //todo: remove, for test
-
-        if ($t['status'] == self::STATUS_POSTER_CLOSE) return self::STATUS_CLOSE;
         if ($t['status'] == self::STATUS_POSTER_FISCAL) return self::STATUS_FISCAL;
+
+        if ($t['status'] == self::STATUS_POSTER_CLOSE) {
+            $status = self::STATUS_CLOSE;
+            if ( strpos($t['transaction_comment'], $this->configs['doneComment']) > -1 ) {
+                $status = self::STATUS_CLOSE_DONE;
+            }
+        }
 
         if ($t['status'] == self::STATUS_POSTER_OPENED) {
             $status = self::STATUS_WAITING;
-            if (strpos($t['transaction_comment'], $this->configs['doneComment']) > -1) {
+            if ( strpos($t['transaction_comment'], $this->configs['doneComment']) > -1 ) {
                 $status = self::STATUS_DONE;
             }
         }
@@ -272,10 +384,20 @@ class Poster
         return false;
     }
 
-    protected function convertedByStatus($transactions)
+    protected function convertedByStatus($transactions, $full = true)
     {
         $result = array();
-        foreach ( $this->getStatuses()['inner'] as $statusKey => $status ){
+
+        //priority
+        $statuses = array_keys($this->getStatuses()['inner']);
+        if ( !$full ){
+            $statuses = array(
+                self::STATUS_WAITING,
+                self::STATUS_DONE,
+                self::STATUS_CLOSE_DONE,
+            );
+        }
+        foreach ( $statuses as $statusKey ){
             if (isset($transactions[$statusKey])) {
                 $sorted = $this->sortTransactions($transactions[$statusKey]);
                 $result = array_merge($result, $sorted);

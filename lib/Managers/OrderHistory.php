@@ -11,8 +11,8 @@ class OrderHistory extends Crud
     public function moveFromOrders()
     {
         $this->db->beginTransaction();
-        $query  = "insert into order_history (origin_id, view_id, status, origin_status, last_date)
-            select origin_id, view_id, status, origin_status, last_date from orders
+        $query  = "insert into order_history (origin_id, view_id, status, origin_status, comment, last_date)
+            select origin_id, view_id, status, origin_status, comment, last_date from orders
             where last_date < '".date("Y-m-d 00:00:00")."'";
         $insert = $this->db->query($query);
         if (!$insert) {

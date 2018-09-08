@@ -29,7 +29,7 @@ class Orders extends Crud
 
     public function updateStatus($data)
     {
-        $query  = "UPDATE orders SET status = :status, origin_status = :origin_status, last_date = :last_date WHERE origin_id = :origin_id";
+        $query  = "UPDATE orders SET status = :status, origin_status = :origin_status, last_date = :last_date, last_update_date = NOW() WHERE origin_id = :origin_id";
         $update = $this->db->query($query,
             array(
             "status" => $data['status'],

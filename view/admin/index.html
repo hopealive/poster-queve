@@ -1,5 +1,5 @@
-<h1>Главная</h1>
-<h2>Текущие заказы</h2>
+<h1>Головна</h1>
+<h2>Поточні замовлення</h2>
 <?php
 $poster = new Poster();
 
@@ -60,8 +60,8 @@ $statuses = $poster->getStatuses();
                         <th>Id в системі</th>
                         <th>Id в Poster</th>
                         <th>Статус в системі</th>
-                        <th>Статус в терминалі</th>
-                        <th>Дата последнего обновления</th>
+                        <th>Статус в Poster</th>
+                        <th>Дата (остання в Poster)</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -69,7 +69,7 @@ $statuses = $poster->getStatuses();
                         <tr>
                             <td scope="row"><?php echo $order['view_id']; ?></td>
                             <td scope="row"><?php echo $order['origin_id']; ?></td>
-                            <td><?php echo $statuses['general'][$order['status']]; ?></td>
+                            <td><?php echo $statuses['inner'][$order['status']]; ?></td>
                             <td><?php echo $statuses['poster'][$order['origin_status']]; ?></td>
                             <td><?php echo $order['last_date']; ?></td>
                         </tr>

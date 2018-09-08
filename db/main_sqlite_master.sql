@@ -65,7 +65,8 @@ CREATE TABLE orders (
   view_id int(11) NOT NULL,
   status varchar(32) NOT NULL,
   origin_status int(11) NOT NULL,
-  last_date datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  last_date datetime NOT NULL,
+  last_update_date datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
 PRIMARY KEY ( id )
 ) ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_general_ci;
 ALTER TABLE orders ADD UNIQUE( `origin_id`);
@@ -76,6 +77,7 @@ CREATE TABLE order_history (
   view_id int(11) NOT NULL,
   status varchar(32) NOT NULL,
   origin_status int(11) NOT NULL,
-  last_date datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  last_date datetime NOT NULL,
+  last_update_date datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
 PRIMARY KEY ( id )
 ) ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_general_ci;

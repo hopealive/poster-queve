@@ -9,7 +9,7 @@
 class Auth
 {
 
-    const ROOT_LOGIN = 'root@gmail.com';
+    const ROOT_LOGIN = 'demo@gmail.com';
     const ROOT_PASSWORD = 'fe01ce2a7fbac8fafaed7c982a04e229';
     protected $db = null;
 

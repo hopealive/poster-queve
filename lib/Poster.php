@@ -26,6 +26,9 @@ class Poster
     const STATUS_DELETED = 'deleted';
     const STATUS_FISCAL = 'fiscal';
 
+    const COUNT_ORDERS_TO_VIEW = 8;
+    const HIDE_AFTER_MINUTES = 30;
+
 
     public function __construct()
     {
@@ -53,15 +56,27 @@ class Poster
         $dateFrom = date("Ymd", time() - 60 * 60 * 24);
         $params = array('dateFrom' => $dateFrom);
         $response = $this->getTransactions($params);
-        $transactions = $this->processTransactions($response);
-        if ($transactions['status'] == 'error' || empty($transactions['transactions'])  ) return $transactions;
+        $process = $this->processTransactions($response);
 
-        $converted = $this->convertedByStatus($transactions['transactions']);
+        if ($process['status'] == 'error' ) return $process;
+
+        $orders = (new Orders())->getAll(array());
+        $ordersByStatus = array();
+        foreach ( $orders as $order ){
+            $compareTime = date('Y-m-d H:i:s', strtotime('-' . self::HIDE_AFTER_MINUTES . ' minutes') );
+            if ( 
+                $order['status'] == self::STATUS_DONE &&
+                $order['last_update_date'] < $compareTime){
+                    continue;
+            }
+            $ordersByStatus[$order['status']][] = $order;
+        }
+        $converted = $this->convertedByStatus($ordersByStatus);
         return [
-            'status' => $transactions['status'],
-            'message' => $transactions['message'],
-            'transactions' => array_slice($converted, 0, 8),
-            'status_changed_to_done' => $transactions['changedToDone'],
+            'status' => $process['status'],
+            'message' => $process['message'],
+            'transactions' => array_slice($converted, 0, self::COUNT_ORDERS_TO_VIEW),
+            'status_changed_to_done' => $process['changedToDone'],
         ];
     }
 
@@ -81,6 +96,7 @@ class Poster
             ];
         }
 
+        $resultByStatus = array();
         foreach ( $orders as $order ){
             $resultByStatus[$order['status']][] = $order;
         }
@@ -120,7 +136,6 @@ class Poster
             return [
                 'status' => 'error',
                 'message' => 'Немає відповіді від серверу',
-                'transactions' => array(),
                 'changedToDone' => $changedToDone,
             ];
         }
@@ -129,7 +144,6 @@ class Poster
             return [
                 'status' => 'error',
                 'message' => $response['error']['message'],
-                'transactions' => array(),
                 'changedToDone' => $changedToDone,
             ];
         }
@@ -139,7 +153,6 @@ class Poster
             return [
                 'status' => 'success',
                 'message' => 'Немає замовлень',
-                'transactions' => array(),
                 'changedToDone' => $changedToDone,
             ];
         }
@@ -193,8 +206,6 @@ class Poster
         //create new orders
         (new Orders())->createList($nOrders);
 
-        $viewIds = (new Orders())->getViewIdList();
-
         if (!empty($existOrders)){
             $params['filters'] = ['origin_id' => 'IN ( '.implode(",", array_keys($existOrders) ).' )'];
             $existInDbOrders = (new Orders())->getAll($params);
@@ -219,40 +230,17 @@ class Poster
             }
         }
 
-
-        $resultByStatus = array();
-        foreach ($transactions as $t) {
-            $status = $this->getInnerStatus($t);
-            $resultByStatus[$status][] = array(
-                'id' => $t['transaction_id'],
-                'view_id' => (isset($viewIds[$t['transaction_id']]) ? $viewIds[$t['transaction_id']] : "-"),
-                'status' => $status,
-                'origin_status' => $t['status'],
-                'last_date' => $this->getLastDate($t),
-            );
-        }
-
-        if (empty($resultByStatus)) {
-            return [
-                'status' => 'error',
-                'message' => 'Error while grouping transactions',
-                'transactions' => array(),
-                'changedToDone' => $changedToDone,
-            ];
-        }
-
         return [
             'status' => 'success',
             'message' => 'Success',
-            'transactions' => $resultByStatus,
             'changedToDone' => $changedToDone,
         ];
+
     }
 
     protected function getInnerStatus($t)
     {
         if ($t['status'] == self::STATUS_POSTER_DELETED) return self::STATUS_DELETED;
-        if ($t['status'] == self::STATUS_POSTER_CLOSE) return self::STATUS_CLOSE;
 
         //todo: remove, for test
 //        if ($t['status'] == self::STATUS_POSTER_CLOSE) {
@@ -262,6 +250,7 @@ class Poster
 //        }
        //todo: remove, for test
 
+        if ($t['status'] == self::STATUS_POSTER_CLOSE) return self::STATUS_CLOSE;
         if ($t['status'] == self::STATUS_POSTER_FISCAL) return self::STATUS_FISCAL;
 
         if ($t['status'] == self::STATUS_POSTER_OPENED) {
@@ -286,14 +275,11 @@ class Poster
     protected function convertedByStatus($transactions)
     {
         $result = array();
-        if (isset($transactions[self::STATUS_DONE])) {
-            $sorted = $this->sortTransactions($transactions[self::STATUS_DONE]);
-            $result = array_merge($result, $sorted);
-        }
-
-        if (isset($transactions[self::STATUS_WAITING])) {
-            $sorted = $this->sortTransactions($transactions[self::STATUS_WAITING]);
-            $result = array_merge($result, $sorted);
+        foreach ( $this->getStatuses()['inner'] as $statusKey => $status ){
+            if (isset($transactions[$statusKey])) {
+                $sorted = $this->sortTransactions($transactions[$statusKey]);
+                $result = array_merge($result, $sorted);
+            }
         }
         return $result;
     }
@@ -307,15 +293,18 @@ class Poster
     public function getStatuses()
     {
         return array(
-            'general' => array(
+            'inner' => array(
                 self::STATUS_WAITING => "Очікування",
                 self::STATUS_DONE => "Виконаний",
+                self::STATUS_CLOSE => "Закритий",
+                self::STATUS_DELETED => "Видалений",
+                self::STATUS_FISCAL => "Фіскальний",
             ),
             'poster' => array(
                 self::STATUS_POSTER_OPENED => "Відкритий",
                 self::STATUS_POSTER_CLOSE => "Закритий",
                 self::STATUS_POSTER_DELETED => "Видалений",
-
+                self::STATUS_POSTER_FISCAL => "Фіскальний",
             ),
         );
 

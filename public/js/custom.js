@@ -54,7 +54,7 @@ function updateData() {
             }
 
             if ( response.status_changed_to_done ){
-                var audio = new Audio('/sounds/notification.mp3');
+                var audio = new Audio('/public/sounds/notification.mp3');
                 audio.play();
             }
         }

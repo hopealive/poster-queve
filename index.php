@@ -24,8 +24,8 @@ $images = $crud->getSliderImages();
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        <link href="js/jsImgSlider/themes/6/js-image-slider.css" rel="stylesheet" type="text/css" />
-        <link href="css/style.css" rel="stylesheet" type="text/css" />
+        <link href="/public/js/jsImgSlider/themes/6/js-image-slider.css" rel="stylesheet" type="text/css" />
+        <link href="/public/css/style.css" rel="stylesheet" type="text/css" />
     </head>
     <body>
 
@@ -62,9 +62,9 @@ $images = $crud->getSliderImages();
         </div>
 
         <script src="https://code.jquery.com/jquery-3.2.1.min.js" crossorigin="anonymous"></script>
-        <script src="js/custom.js" type="text/javascript"></script>
-        <script src="js/jsImgSlider/themes/6/mcVideoPlugin.js" type="text/javascript"></script>
-        <script src="js/jsImgSlider/themes/6/js-image-slider.js" type="text/javascript"></script>
+        <script src="/public/js/custom.js" type="text/javascript"></script>
+        <script src="/public/js/jsImgSlider/themes/6/mcVideoPlugin.js" type="text/javascript"></script>
+        <script src="/public/js/jsImgSlider/themes/6/js-image-slider.js" type="text/javascript"></script>
         <script>
             var sliderOptions =
                     {

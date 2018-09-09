@@ -49,7 +49,8 @@ class Poster
         );
 
         //write from db
-        $configs = (new Settings)->getSettings();
+        $SettingsManager = new Settings();
+        $configs = $SettingsManager->getSettings();
         if (!empty($configs)) {
             foreach ($configs as $config) {
                 $this->configs[$config['alias']] = $config['value'];
@@ -66,23 +67,24 @@ class Poster
 
         if ($process['status'] == 'error' ) return $process;
 
-        $orders = (new Orders())->getAll(array());
+        $OrdersManager = new Orders();
+        $orders = $OrdersManager->getAll(array());
         $ordersByStatus = array();
         foreach ( $orders as $order ){
             $compareTime = date('Y-m-d H:i:s', strtotime('-' . self::HIDE_AFTER_MINUTES . ' minutes') );
-            if ( in_array($order['status'], [self::STATUS_DONE, self::STATUS_CLOSE_DONE])
+            if ( in_array($order['status'], array(self::STATUS_DONE, self::STATUS_CLOSE_DONE) )
                 && $order['last_update_date'] < $compareTime){
                     continue;
             }
             $ordersByStatus[$order['status']][] = $order;
         }
         $converted = $this->convertedByStatus($ordersByStatus, false);
-        return [
+        return array(
             'status' => $process['status'],
             'message' => $process['message'],
             'transactions' => array_slice($converted, 0, self::COUNT_ORDERS_TO_VIEW),
             'status_changed_to_done' => $process['changedToDone'],
-        ];
+        );
     }
 
     public function getPaginateTransactions($offset, $length)
@@ -91,14 +93,14 @@ class Poster
         if ( $length > 0 ) $params['limit'] = $length;
         if ( $offset > 0 ) $params['offset'] = $length*$offset;
 
-
-        $orders = (new Orders())->getAll($params);
+        $OrdersManager = new Orders();
+        $orders = $OrdersManager->getAll($params);
         if (empty($orders)){
-            return [
+            return array(
                 'status' => "error",
                 'message' => 'Немає замовлень',
                 'transactions' => array(),
-            ];
+            );
         }
 
         $resultByStatus = array();
@@ -107,16 +109,17 @@ class Poster
         }
         $result = $this->convertedByStatus($resultByStatus, true);
 
-        return [
+        return array(
             'status' => 'success',
             'message' => 'Success',
             'transactions' => $result,
-        ];
+        );
     }
 
     public function getTransactionTotal()
     {
-        return (new Orders())->countAll();
+        $OrdersManager = new Orders();
+        return $OrdersManager->countAll();
     }
 
     protected function getTransactions($params = array() )
@@ -184,28 +187,28 @@ class Poster
     {
         $changedToDone = false;
         if (empty($response)){
-            return [
+            return array(
                 'status' => 'error',
                 'message' => 'Немає відповіді від серверу',
                 'changedToDone' => $changedToDone,
-            ];
+            );
         }
 
         if (isset($response['error'])){
-            return [
+            return array(
                 'status' => 'error',
                 'message' => $response['error']['message'],
                 'changedToDone' => $changedToDone,
-            ];
+            );
         }
 
         $transactions = $response['response'];
         if (empty($transactions)){
-            return [
+            return array(
                 'status' => 'success',
                 'message' => 'Немає замовлень',
                 'changedToDone' => $changedToDone,
-            ];
+            );
         }
 
 //todo: remove, need for tests
@@ -224,7 +227,9 @@ class Poster
 //        }
 //todo: remove, need for tests
 
-        (new OrderHistory())->moveFromOrders();
+        $OrdersManager = new Orders();
+        $OrderHistoryManager = new OrderHistory();
+        $OrderHistoryManager->moveFromOrders();
 
         $nOrders = array();
         foreach ($transactions as $k => $t) {
@@ -245,7 +250,7 @@ class Poster
         $exists = array();
         $existOrders = array();
         if (!empty($nOrders)){
-            $exists = (new Orders())->getListByOriginIds(array_column($nOrders, 'origin_id'));
+            $exists = $OrdersManager->getListByOriginIds(array_column($nOrders, 'origin_id'));
             if (!empty($exists)){
                 foreach ($exists as $existId) {
                     //for check to update
@@ -259,12 +264,13 @@ class Poster
 
         //sort
         if (!empty($nOrders)){
-            uksort($nOrders, function($a, $b) {
+            function aUkSort($a, $b) {
                 return ($a['last_date'] < $b['last_date']) ? -1 : 1;
-            });
+            }
+            uksort($nOrders, 'aUkSort');
         }
 
-        $i = $maxId = (new Orders())->getMaxId();
+        $i = $maxId = $OrdersManager->getMaxId();
 
         foreach ( $nOrders as $originId => $order ){
             ++$i;
@@ -281,11 +287,11 @@ class Poster
             $nOrders[$originId]['comment'] = self::SUCCESS_DONE_MESSAGE."$i \n".$nOrders[$originId]['comment'];
             $updateCommentResponse = $this->updatePosterComment($nOrders[$originId]);
             if ($updateCommentResponse['status'] == 'error'){
-                return [
+                return array(
                     'status' => 'error',
                     'message' => $updateCommentResponse['message'],
                     'changedToDone' => $changedToDone,
-                ];
+                );
             }
         }
 
@@ -294,20 +300,20 @@ class Poster
 
         //create new orders
         if (!empty($nOrders)) {
-            if (!(new Orders())->createList($nOrders)) {
+            if (!$OrdersManager->createList($nOrders)) {
                 $db->rollBack();
-                return [
+                return array(
                     'status' => 'error',
                     'message' => 'Помилка під час запису нових чеків',
                     'changedToDone' => $changedToDone,
-                ];
+                );
             }
         }
 
         //update orders
         if (!empty($existOrders)){
-            $params['filters'] = ['origin_id' => 'IN ( '.implode(",", array_keys($existOrders) ).' )'];
-            $existInDbOrders = (new Orders())->getAll($params);
+            $params['filters'] = array('origin_id' => 'IN ( '.implode(",", array_keys($existOrders) ).' )');
+            $existInDbOrders = $OrdersManager->getAll($params);
             foreach ( $existInDbOrders as $eOrder ){
                 $needUpdate = false;
                 $originId = $eOrder['origin_id'] ;
@@ -317,7 +323,7 @@ class Poster
 
                 if ( $eOrder['status'] != $existOrders[$originId]['status']  ){
                     $needUpdate = true;
-                    if ( in_array($existOrders[$originId]['status'], [ self::STATUS_DONE, self::STATUS_CLOSE_DONE ]) ){
+                    if ( in_array($existOrders[$originId]['status'], array(self::STATUS_DONE, self::STATUS_CLOSE_DONE) )){
                         $changedToDone = true;
                     }
                 }
@@ -328,33 +334,29 @@ class Poster
 
                 //update
                 if ( $needUpdate ){
-                    if (!(new Orders())->updateStatus($existOrders[$originId])){
+                    if (!$OrdersManager->updateStatus($existOrders[$originId])){
                         $db->rollBack();
-                        return [
+                        return array(
                             'status' => 'error',
                             'message' => 'Помилка під час оновлення чеків',
                             'changedToDone' => $changedToDone,
-                        ];
+                        );
                     }
                 }
             }
         }
         $db->executeTransaction();
 
-        return [
+        return array(
             'status' => 'success',
             'message' => 'Success',
             'changedToDone' => $changedToDone,
-        ];
+        );
 
     }
 
     protected function getInnerStatus($t)
     {
-        //todo: remove, need for tests
-//        if ($t['status'] == self::STATUS_POSTER_CLOSE && !($t['transaction_id']  % 6) ) return self::STATUS_DONE;//every 10th - complete
-        //todo: remove, need for tests
-
         if ($t['status'] == self::STATUS_POSTER_DELETED) return self::STATUS_DELETED;
         if ($t['status'] == self::STATUS_POSTER_FISCAL) return self::STATUS_FISCAL;
 
@@ -389,7 +391,8 @@ class Poster
         $result = array();
 
         //priority
-        $statuses = array_keys($this->getStatuses()['inner']);
+        $gStatuses = $this->getStatuses();
+        $statuses = array_keys($gStatuses['inner']);
         if ( !$full ){
             $statuses = array(
                 self::STATUS_WAITING,

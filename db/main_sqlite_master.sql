@@ -67,7 +67,7 @@ CREATE TABLE orders (
   origin_status int(11) NOT NULL,
   comment text NULL,
   last_date datetime NOT NULL,
-  last_update_date datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  last_update_date timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 PRIMARY KEY ( id )
 ) ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_general_ci;
 ALTER TABLE orders ADD UNIQUE( `origin_id`);
@@ -80,6 +80,6 @@ CREATE TABLE order_history (
   origin_status int(11) NOT NULL,
   comment text NULL,
   last_date datetime NOT NULL,
-  last_update_date datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  last_update_date timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 PRIMARY KEY ( id )
 ) ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_general_ci;

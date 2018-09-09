@@ -16,6 +16,10 @@ $crud = new Crud;
 $Auth       = new Auth;
 $isLoggedIn = $Auth->loggedIn();
 
+$SettingsManager = new Settings();
+$OrdersManager = new Orders();
+$UsersManager = new Users();
+
 //routing
 if ($isLoggedIn) {
     $action = 'index';
@@ -58,11 +62,11 @@ switch ($action) {
         break;
     case "settings":
         if(isset($_POST['save'])) {
-            $result = (new Settings)->create();
+            $result = $SettingsManager->create();
         } elseif (isset($_POST['update'])){
-            $result = (new Settings)->update();
+            $result = $SettingsManager->update();
         } elseif (isset($_GET['del'])){
-            $result = (new Settings)->delete( (int)$_GET['id'] );
+            $result = $SettingsManager->delete( (int)$_GET['id'] );
         }
         break;
     case "profile":
@@ -71,17 +75,17 @@ switch ($action) {
         break;
     case "create":
         if(!empty($_POST)){
-            $result = (new Users())->create();
+            $result = $UsersManager->create();
         }
         break;
     case "update":
         if(isset($_GET['id'])){
-            $result = (new Users())->edit();
+            $result = $UsersManager->edit();
         }
         break;
     case "delete":
         if(isset($_POST['id'])){
-            $result = (new Users())->delete();
+            $result = $UsersManager->delete();
         }
         break;
     case "logout":

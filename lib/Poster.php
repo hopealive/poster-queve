@@ -31,7 +31,7 @@ class Poster
     const SPOT_TABLE_ID = 1;
 
     const COUNT_ORDERS_TO_VIEW = 8;
-    const HIDE_AFTER_MINUTES = 1;
+    const HIDE_AFTER_MINUTES = 2;
 
     const SUCCESS_DONE_MESSAGE = "Замовлення #";
 
@@ -211,40 +211,17 @@ class Poster
             );
         }
 
-//todo: remove, need for tests
-//        $params = array(
-//            'token' => $this->configs['token'],
-//            'transaction_id' => 394418,
-//            'include_products' => false,
-//        );
-//        $url = $this->configs['url'].'dash.getTransaction?'.http_build_query($params);
-//        $testTransaction = $this->transport->sendRequest($url);
-//        if ( isset($testTransaction['response'][0]) ){
-//            $testTransaction = $testTransaction['response'][0];
-//            $testTransaction['date_start'] = 1536422404551;
-////            $testTransaction['transaction_comment'] .= "+";//todo: uncomment to ding dong
-//            $transactions[] = $testTransaction;
-//        }
-//todo: remove, need for tests
-
-        $OrdersManager = new Orders();
         $OrderHistoryManager = new OrderHistory();
         $OrderHistoryManager->moveFromOrders();
 
-        $nOrders = array();
-        foreach ($transactions as $k => $t) {
-            $order = array(
-                'origin_id' => $t['transaction_id'],
-                'view_id' => null,
-                'status' => $this->getInnerStatus($t),
-                'origin_status' => $t['status'],
-                'comment' => (isset ($t['transaction_comment']) ? $t['transaction_comment'] : null ),
-                'last_date' => $this->getLastDate($t),
+        $OrdersManager = new Orders();
+        $nOrders = $this->mapResponse($transactions);
+        if (!$this->needDbActions($nOrders)){
+            return array(
+                'status' => 'waiting',
+                'message' => 'Немає замовлень',
+                'changedToDone' => $changedToDone,
             );
-
-            if ( empty($order['last_date']) OR $order['last_date'] < date("Y-m-d 00:00:00") ) continue;
-
-            $nOrders[$t['transaction_id']] = $order;
         }
 
         $exists = array();
@@ -352,7 +329,59 @@ class Poster
             'message' => 'Success',
             'changedToDone' => $changedToDone,
         );
+    }
 
+    protected function needDbActions($orders)
+    {
+        $OrdersManager = new Orders();
+        $dbOrdersSource = $OrdersManager->getAll();
+        if (count($dbOrdersSource) != count($orders)){
+            return true;
+        }
+
+        $dbOrders = array();
+        foreach ($dbOrdersSource as $o ){
+            $dbOrders[$o['origin_id']] = $o['origin_id'].";"
+                .$o['origin_status'].";"
+                .$o['comment'].";"
+                .$o['last_date'];
+        }
+        sort($dbOrders);
+        $dbCheckSum = md5(implode(",", $dbOrders));
+
+        $orders = array_map(function($o){
+            return $o['origin_id'].";"
+                .$o['origin_status'].";"
+                .$o['comment'].";"
+                .$o['last_date'];
+        }, $orders);
+        sort($orders);
+        $checkSum = md5(implode(",", $orders));
+
+        if ($checkSum == $dbCheckSum){
+            return false;
+        }
+        return true;
+    }
+
+    protected function mapResponse($transactions)
+    {
+        $orders = array();
+        foreach ($transactions as $k => $t) {
+            $order = array(
+                'origin_id' => $t['transaction_id'],
+                'view_id' => null,
+                'status' => $this->getInnerStatus($t),
+                'origin_status' => $t['status'],
+                'comment' => (isset ($t['transaction_comment']) ? $t['transaction_comment'] : null ),
+                'last_date' => $this->getLastDate($t),
+            );
+
+            if ( empty($order['last_date']) OR $order['last_date'] < date("Y-m-d 00:00:00") ) continue;
+
+            $orders[$t['transaction_id']] = $order;
+        }
+        return $orders;
     }
 
     protected function getInnerStatus($t)

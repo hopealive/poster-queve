@@ -1,5 +1,6 @@
 var timeDelay = {
     'normal': 2000,
+    'waiting': 5000,
     'empty': 30000,
     'error': 30000,
 };
@@ -9,7 +10,7 @@ function updateData() {
         $('.error-block .error-message').html('');
         $('.error-block').hide();
 
-        if (jQuery.isEmptyObject(response) || response.status != 'success') {
+        if (jQuery.isEmptyObject(response) || response.status == 'error') {
             $('.order-body').empty().append(vRow);
 
             var errorMeassge = "Сталась невідома помилка";
@@ -19,6 +20,17 @@ function updateData() {
             $('.error-block .error-message').html(errorMeassge);
             $('.error-block').show();
             return;
+        }
+
+        if (response.status == 'waiting') {
+            $('.order-body').empty();
+            var vRow = '<div class="row status-in-progress">'
+                    + '<div class="col col-id">&nbsp;</div>'
+                    + '<div class="col col-status">Немає замовлень</div>'
+                    + '</div>';
+
+            $('.order-body').empty().append(vRow);
+            window.setTimeout('updateData()', timeDelay.waiting);
         }
 
         if (response.status == 'success') {

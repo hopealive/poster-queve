@@ -349,12 +349,14 @@ class Poster
         sort($dbOrders);
         $dbCheckSum = md5(implode(",", $dbOrders));
 
-        $orders = array_map(function($o){
-            return $o['origin_id'].";"
+        function mapResponse($o){
+            $str = $o['origin_id'].";"
                 .$o['origin_status'].";"
                 .$o['comment'].";"
                 .$o['last_date'];
-        }, $orders);
+            return $str;
+        };
+        $orders = array_map('mapResponse', $orders);
         sort($orders);
         $checkSum = md5(implode(",", $orders));
 

@@ -331,11 +331,11 @@ class Poster
         );
     }
 
-    protected function needDbActions($orders)
+    protected function needDbActions($response)
     {
         $OrdersManager = new Orders();
         $dbOrdersSource = $OrdersManager->getAll();
-        if (count($dbOrdersSource) != count($orders)){
+        if (count($dbOrdersSource) != count($response)){
             return true;
         }
 
@@ -349,14 +349,13 @@ class Poster
         sort($dbOrders);
         $dbCheckSum = md5(implode(",", $dbOrders));
 
-        function mapResponse($o){
-            $str = $o['origin_id'].";"
+        $orders = array();
+        foreach ($response as $r ){
+            $orders[] = $o['origin_id'].";"
                 .$o['origin_status'].";"
                 .$o['comment'].";"
                 .$o['last_date'];
-            return $str;
-        };
-        $orders = array_map('mapResponse', $orders);
+        }
         sort($orders);
         $checkSum = md5(implode(",", $orders));
 
